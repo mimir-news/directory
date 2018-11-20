@@ -90,7 +90,7 @@ func (r *pgUserRepo) Save(user domain.FullUser) error {
 	c := user.Credentials
 	res, err := r.db.Exec(saveUserQuery, u.ID, u.Email, c.Password, c.Salt, u.CreatedAt)
 	if err != nil {
-		return emptyUser, err
+		return err
 	}
 
 	return dbutil.AssertRowsAffected(res, 1, ErrFailedInsert)

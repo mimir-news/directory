@@ -8,6 +8,14 @@ type FullUser struct {
 	Credentials StoredCredentials
 }
 
+// NewUser creates a new full users.
+func NewUser(credentials StoredCredentials, watchlists []user.Watchlist) FullUser {
+	return FullUser{
+		User:        user.New(credentials.Email, watchlists),
+		Credentials: credentials,
+	}
+}
+
 // StoredCredentials user credentials in hashed and encrypted from.
 type StoredCredentials struct {
 	Email    string

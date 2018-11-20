@@ -13,7 +13,7 @@ import (
 
 type env struct {
 	userRepo    repository.UserRepo
-	passwordSvc service.PasswordService
+	passwordSvc *service.PasswordService
 	tokenSigner auth.Signer
 	db          *sql.DB
 }
@@ -47,7 +47,7 @@ func runMigrations(db *sql.DB) {
 }
 
 func (e *env) close() {
-	err = e.db.Close()
+	err := e.db.Close()
 	if err != nil {
 		log.Println(err)
 	}

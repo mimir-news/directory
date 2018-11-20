@@ -25,10 +25,6 @@
 #   unused-packages = true
 
 
-[[constraint]]
-  name = "github.com/mimir-news/pkg"
-  version = "0.2.1"
-
 [prune]
   go-tests = true
   unused-packages = true
@@ -36,3 +32,7 @@
 [[constraint]]
   name = "github.com/stretchr/testify"
   version = "1.2.2"
+
+[[constraint]]
+  revision = "1bab144828aaa7160c613f4eba9dbf6af7b27351"
+  name = "github.com/mimir-news/pkg"
