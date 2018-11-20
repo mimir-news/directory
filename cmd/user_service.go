@@ -3,12 +3,11 @@ package main
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/directory/pkg/repository"
-	"github.com/mimir-news/pkg/schema/user"
-
-	"github.com/gin-gonic/gin"
 	"github.com/mimir-news/pkg/httputil"
+	"github.com/mimir-news/pkg/schema/user"
 )
 
 var errNotImplemented = httputil.NewError("not implemented", http.StatusNotImplemented)

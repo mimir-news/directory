@@ -9,7 +9,6 @@ import (
 	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/pkg/schema/user"
-
 	"github.com/stretchr/testify/assert"
 )
 
