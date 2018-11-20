@@ -55,7 +55,7 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:589d9ffe992a488f119784f6ca3b630cfb2c10b238b952f61164d5f60e5731ce"
+  digest = "1:4fa90df5a87137fe6317d9c78913696c0638579db5665f5617bb9f542093476a"
   name = "github.com/mimir-news/pkg"
   packages = [
     "httputil",
@@ -65,8 +65,8 @@
     "schema/user",
   ]
   pruneopts = "UT"
-  revision = "78fb07f6d3283ac20cac7b33b7a6aa75e1735204"
-  version = "0.2"
+  revision = "584ca7f96a8110f5b9bbd29d0b19a205d3719a13"
+  version = "0.2.1"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
