@@ -200,6 +200,9 @@ type mockUserRepo struct {
 
 	saveErr error
 	saveArg domain.FullUser
+
+	deleteErr error
+	deleteArg string
 }
 
 func (r *mockUserRepo) Find(id string) (domain.FullUser, error) {
@@ -215,4 +218,9 @@ func (r *mockUserRepo) FindByEmail(email string) (domain.FullUser, error) {
 func (r *mockUserRepo) Save(user domain.FullUser) error {
 	r.saveArg = user
 	return r.saveErr
+}
+
+func (r *mockUserRepo) Delete(id string) error {
+	r.deleteArg = id
+	return r.deleteErr
 }

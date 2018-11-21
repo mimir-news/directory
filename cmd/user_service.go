@@ -84,6 +84,26 @@ func (e *env) handleGetUser(c *gin.Context) {
 	c.JSON(http.StatusOK, fullUser.User)
 }
 
+func (e *env) handleDeleteUser(c *gin.Context) {
+	userID, err := getUserIDFromPath(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	err = e.userRepo.Delete(userID)
+	if err == repository.ErrNoSuchUser {
+		c.Error(httputil.ErrNotFound())
+		return
+	}
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	httputil.SendOK(c)
+}
+
 func (e *env) createSessionToken(userID, clientID string) (string, error) {
 	token, err := e.tokenSigner.New(userID, clientID)
 	if err != nil {

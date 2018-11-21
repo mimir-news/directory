@@ -33,7 +33,7 @@ func newServer(e *env, conf config) *http.Server {
 	r.GET("/v1/users/:userId", e.handleGetUser)
 	r.PUT("/v1/users/:userId/password", placeholderHandler)
 	r.PUT("/v1/users/:userId/email", placeholderHandler)
-	r.DELETE("/v1/users/:userId", placeholderHandler)
+	r.DELETE("/v1/users/:userId", e.handleDeleteUser)
 	r.GET("/v1/users/:userId/watchlists", placeholderHandler)
 
 	// Secured watchlist routes

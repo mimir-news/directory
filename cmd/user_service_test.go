@@ -175,3 +175,50 @@ func TestHandleGetUser(t *testing.T) {
 	assert.Equal(userID, userRepo.findArg)
 
 }
+
+func TestHandleDeleteUser(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	clientID := id.New()
+
+	conf := getTestConfig()
+	userRepo := &mockUserRepo{}
+	mockEnv := getTestEnv(conf, userRepo, nil)
+	authToken, err := mockEnv.tokenSigner.New(userID, clientID)
+	assert.NoError(err)
+
+	// Setup: Get user happy path.
+	server := newServer(mockEnv, conf)
+	req := createTestDeleteRequest(clientID, authToken, "/v1/users/"+userID)
+	res := performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusOK, res.Code)
+	assert.Equal(userID, userRepo.deleteArg)
+
+	// Setup: Missing token.
+	userRepo.deleteArg = ""
+	req = createTestDeleteRequest(clientID, "", "/v1/users/"+userID)
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusUnauthorized, res.Code)
+	assert.Equal("", userRepo.deleteArg)
+
+	// Setup: Missmatching user ids.
+	userRepo.findArg = ""
+	req = createTestDeleteRequest(clientID, authToken, "/v1/users/wrong-user-id")
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusForbidden, res.Code)
+	assert.Equal("", userRepo.findArg)
+
+	// Setup: No user found.
+	userRepo.deleteErr = repository.ErrNoSuchUser
+	userRepo.deleteArg = ""
+	req = createTestDeleteRequest(clientID, authToken, "/v1/users/"+userID)
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusNotFound, res.Code)
+	assert.Equal(userID, userRepo.deleteArg)
+
+}

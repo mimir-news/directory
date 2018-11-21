@@ -39,6 +39,10 @@ func createTestGetRequest(clientID, token, route string) *http.Request {
 	return createTestRequest(clientID, token, route, http.MethodGet, nil)
 }
 
+func createTestDeleteRequest(clientID, token, route string) *http.Request {
+	return createTestRequest(clientID, token, route, http.MethodDelete, nil)
+}
+
 func createTestRequest(clientID, token, route, method string, body interface{}) *http.Request {
 	var reqBody io.Reader
 	if body != nil {
@@ -105,21 +109,29 @@ type mockUserRepo struct {
 
 	saveErr error
 	saveArg domain.FullUser
+
+	deleteErr error
+	deleteArg string
 }
 
-func (r *mockUserRepo) Find(id string) (domain.FullUser, error) {
-	r.findArg = id
-	return r.findUser, r.findErr
+func (ur *mockUserRepo) Find(id string) (domain.FullUser, error) {
+	ur.findArg = id
+	return ur.findUser, ur.findErr
 }
 
-func (r *mockUserRepo) FindByEmail(email string) (domain.FullUser, error) {
-	r.findByEmailArg = email
-	return r.findByEmailUser, r.findByEmailErr
+func (ur *mockUserRepo) FindByEmail(email string) (domain.FullUser, error) {
+	ur.findByEmailArg = email
+	return ur.findByEmailUser, ur.findByEmailErr
 }
 
-func (r *mockUserRepo) Save(user domain.FullUser) error {
-	r.saveArg = user
-	return r.saveErr
+func (ur *mockUserRepo) Save(user domain.FullUser) error {
+	ur.saveArg = user
+	return ur.saveErr
+}
+
+func (ur *mockUserRepo) Delete(id string) error {
+	ur.deleteArg = id
+	return ur.deleteErr
 }
 
 type mockSessionRepo struct {

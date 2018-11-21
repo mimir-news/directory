@@ -22,6 +22,7 @@ type UserRepo interface {
 	Find(id string) (domain.FullUser, error)
 	FindByEmail(email string) (domain.FullUser, error)
 	Save(user domain.FullUser) error
+	Delete(id string) error
 }
 
 // NewUserRepo creates a new UserRepo using the default implementation.
@@ -93,4 +94,22 @@ func (ur *pgUserRepo) Save(user domain.FullUser) error {
 	}
 
 	return dbutil.AssertRowsAffected(res, 1, dbutil.ErrFailedInsert)
+}
+
+const deleteUserQuery = `
+	UPDATE app_user SET
+		email = NULL, 
+		password = NULL,
+		salt = NULL
+		locked = TRUE
+	WHERE id = $1`
+
+// Save upserts a user in the database.
+func (ur *pgUserRepo) Delete(id string) error {
+	res, err := ur.db.Exec(deleteUserQuery, id)
+	if err != nil {
+		return err
+	}
+
+	return dbutil.AssertRowsAffected(res, 1, ErrNoSuchUser)
 }
