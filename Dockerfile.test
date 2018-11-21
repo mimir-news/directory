@@ -1,0 +1,10 @@
+FROM czarsimon/godep:1.11.2-stretch
+
+# Copy source
+WORKDIR /go/src/directory
+COPY . .
+
+# Install dependencies
+RUN dep ensure
+
+CMD ["sh", "run-tests.sh"]

@@ -31,23 +31,6 @@ node() {
         sh "docker rmi $testImage"
     }
 
-    stage('Package') {
-        // Builds and tags docker images
-        sh "docker build -t $imageName -t $detailedName -t $latestName ."
-        sh "docker push $imageName"
-        sh "docker push $detailedName"
-        sh "docker push $latestName"
-
-        // Deletes images to free up space
-        sh "docker rmi $latestName"
-        sh "docker rmi $imageName"
-        sh "docker rmi $detailedName"
-    }
-
-    stage('Deploy') {
-        echo "Run deployment to kubernetes here"
-    }
-
 }
 
 
