@@ -26,7 +26,7 @@ func newServer(e *env, conf config) *http.Server {
 
 	// Unsecured enpoints
 	r.POST("/v1/users", e.handleUserCreation)
-	r.POST("/v1/login", placeholderHandler)
+	r.POST("/v1/login", e.handleLogin)
 	r.PUT("/v1/password/reset", placeholderHandler)
 
 	// Secured user routes

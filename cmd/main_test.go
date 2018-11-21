@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/directory/pkg/service"
@@ -82,8 +83,13 @@ func getTestConfig() config {
 		UnsecuredRoutes: []string{
 			"/health",
 			"/v1/users",
+			"/v1/login",
 		},
 	}
+}
+
+func testHandler(c *gin.Context) {
+	httputil.SendOK(c)
 }
 
 type mockUserRepo struct {

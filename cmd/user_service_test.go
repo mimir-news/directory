@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mimir-news/pkg/httputil/auth"
+
 	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/pkg/schema/user"
@@ -57,4 +59,53 @@ func TestUserCreation(t *testing.T) {
 	req = createTestPostRequest("client-id", "", "/v1/users", credentials)
 	res = performTestRequest(server.Handler, req)
 	assert.Equal(http.StatusConflict, res.Code)
+}
+
+func TestHandleLogin(t *testing.T) {
+	assert := assert.New(t)
+
+	credentials := user.Credentials{
+		Email:    "mail@mail.com",
+		Password: "super-secret-password",
+	}
+
+	expectedUser := domain.FullUser{
+		User: user.User{
+			ID:        "user-id",
+			Email:     credentials.Email,
+			CreatedAt: time.Now().UTC(),
+		},
+		Credentials: domain.StoredCredentials{
+			Email:    credentials.Email,
+			Password: "S5UeZOWCDkIfP/5LUDpyhIY0l6+aow+CmkBEVtHqpebhe04vb6kDbPaD/wo05fs6x1lvJfI/6YZ66zbQ8X2lHaEThp4f1Zl0exk7j/wow740KbWZHf9DSA==", // Hashed and encrypted password.
+			Salt:     "3MQEKd3NVnU+WQFQxo8JpYWrTrqXOiwro4MwLwnsckWXinE=",                                                                         // Encrypted salt
+		},
+	}
+
+	conf := getTestConfig()
+	userRepo := &mockUserRepo{
+		findByEmailUser: expectedUser,
+	}
+	mockEnv := getTestEnv(conf, userRepo)
+	server := newServer(mockEnv, conf)
+
+	req := createTestPostRequest("client-id", "", "/v1/login", credentials)
+	res := performTestRequest(server.Handler, req)
+
+	assert.Equal(http.StatusOK, res.Code)
+	var token user.Token
+	err := json.NewDecoder(res.Body).Decode(&token)
+	assert.NoError(err)
+	verifier := auth.NewVerifier(conf.TokenSecret, conf.TokenVerificationKey)
+	authToken, err := verifier.Verify("client-id", token.Token)
+	assert.NoError(err)
+	assert.Equal(expectedUser.User.ID, authToken.Body.Subject)
+
+	wrongCredentials := user.Credentials{
+		Email:    "mail@mail.com",
+		Password: "super-wrong-password",
+	}
+	req = createTestPostRequest("client-id", "", "/v1/login", wrongCredentials)
+	res = performTestRequest(server.Handler, req)
+	assert.Equal(http.StatusUnauthorized, res.Code)
 }
