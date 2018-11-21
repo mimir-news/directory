@@ -65,9 +65,11 @@ func createTestRequest(clientID, token, route, method string, body interface{}) 
 	return req
 }
 
-func getTestEnv(conf config, userRepo repository.UserRepo) *env {
+func getTestEnv(conf config, userRepo repository.UserRepo,
+	sessionRepo repository.SessionRepo) *env {
 	return &env{
 		userRepo:    userRepo,
+		sessionRepo: sessionRepo,
 		passwordSvc: service.NewPasswordService(userRepo, conf.PasswordPepper, conf.PasswordEncryptionKey),
 		tokenSigner: auth.NewSigner(conf.TokenSecret, conf.TokenVerificationKey, 24*time.Hour),
 	}
@@ -118,4 +120,14 @@ func (r *mockUserRepo) FindByEmail(email string) (domain.FullUser, error) {
 func (r *mockUserRepo) Save(user domain.FullUser) error {
 	r.saveArg = user
 	return r.saveErr
+}
+
+type mockSessionRepo struct {
+	saveErr error
+	saveArg domain.Session
+}
+
+func (sr *mockSessionRepo) Save(session domain.Session) error {
+	sr.saveArg = session
+	return sr.saveErr
 }

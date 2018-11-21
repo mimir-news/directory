@@ -55,7 +55,7 @@ func (e *env) handleLogin(c *gin.Context) {
 		return
 	}
 
-	encodedToken, err := e.tokenSigner.New(u.User.ID, c.GetHeader(auth.ClientIDKey))
+	encodedToken, err := e.createSessionToken(u.User.ID, c.GetHeader(auth.ClientIDKey))
 	if err != nil {
 		c.Error(err)
 		return
@@ -82,6 +82,21 @@ func (e *env) handleGetUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, fullUser.User)
+}
+
+func (e *env) createSessionToken(userID, clientID string) (string, error) {
+	token, err := e.tokenSigner.New(userID, clientID)
+	if err != nil {
+		return "", err
+	}
+
+	session := domain.NewSession(userID)
+	err = e.sessionRepo.Save(session)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 }
 
 func getUserIDFromPath(c *gin.Context) (string, error) {

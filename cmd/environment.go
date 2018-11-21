@@ -13,6 +13,7 @@ import (
 
 type env struct {
 	userRepo    repository.UserRepo
+	sessionRepo repository.SessionRepo
 	passwordSvc *service.PasswordService
 	tokenSigner auth.Signer
 	db          *sql.DB
@@ -26,6 +27,8 @@ func setupEnv(conf config) *env {
 	runMigrations(db)
 
 	userRepo := repository.NewUserRepo(db)
+	sessionRepo := repository.NewSessionRepo(db)
+
 	passwordSvc := service.NewPasswordService(
 		userRepo, conf.PasswordPepper, conf.PasswordEncryptionKey)
 	signer := auth.NewSigner(
@@ -33,6 +36,7 @@ func setupEnv(conf config) *env {
 
 	return &env{
 		userRepo:    userRepo,
+		sessionRepo: sessionRepo,
 		passwordSvc: passwordSvc,
 		tokenSigner: signer,
 		db:          db,

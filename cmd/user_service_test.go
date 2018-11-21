@@ -23,7 +23,7 @@ func TestUserCreation(t *testing.T) {
 	userRepo := &mockUserRepo{
 		findByEmailErr: repository.ErrNoSuchUser,
 	}
-	mockEnv := getTestEnv(conf, userRepo)
+	mockEnv := getTestEnv(conf, userRepo, nil)
 
 	credentials := user.Credentials{
 		Email:    "mail@mail.com",
@@ -55,7 +55,7 @@ func TestUserCreation(t *testing.T) {
 		findByEmailUser: domain.FullUser{User: u},
 		findByEmailErr:  nil,
 	}
-	mockEnv = getTestEnv(conf, userRepo)
+	mockEnv = getTestEnv(conf, userRepo, nil)
 	server = newServer(mockEnv, conf)
 
 	req = createTestPostRequest("client-id", "", "/v1/users", credentials)
@@ -88,7 +88,8 @@ func TestHandleLogin(t *testing.T) {
 	userRepo := &mockUserRepo{
 		findByEmailUser: expectedUser,
 	}
-	mockEnv := getTestEnv(conf, userRepo)
+	sessionRepo := &mockSessionRepo{}
+	mockEnv := getTestEnv(conf, userRepo, sessionRepo)
 	server := newServer(mockEnv, conf)
 
 	req := createTestPostRequest("client-id", "", "/v1/login", credentials)
@@ -102,14 +103,17 @@ func TestHandleLogin(t *testing.T) {
 	authToken, err := verifier.Verify("client-id", token.Token)
 	assert.NoError(err)
 	assert.Equal(expectedUser.User.ID, authToken.Body.Subject)
+	assert.Equal(expectedUser.User.ID, sessionRepo.saveArg.UserID)
 
 	wrongCredentials := user.Credentials{
 		Email:    "mail@mail.com",
 		Password: "super-wrong-password",
 	}
+	sessionRepo.saveArg = domain.Session{}
 	req = createTestPostRequest("client-id", "", "/v1/login", wrongCredentials)
 	res = performTestRequest(server.Handler, req)
 	assert.Equal(http.StatusUnauthorized, res.Code)
+	assert.Equal("", sessionRepo.saveArg.UserID)
 }
 
 func TestHandleGetUser(t *testing.T) {
@@ -128,7 +132,7 @@ func TestHandleGetUser(t *testing.T) {
 	userRepo := &mockUserRepo{
 		findUser: expectedUser,
 	}
-	mockEnv := getTestEnv(conf, userRepo)
+	mockEnv := getTestEnv(conf, userRepo, nil)
 	authToken, err := mockEnv.tokenSigner.New(userID, clientID)
 	assert.NoError(err)
 
