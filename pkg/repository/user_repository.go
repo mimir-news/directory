@@ -10,8 +10,7 @@ import (
 
 // Common errors.
 var (
-	ErrNoSuchUser   = errors.New("No such user")
-	ErrFailedInsert = errors.New("Insert failed")
+	ErrNoSuchUser = errors.New("No such user")
 )
 
 var (
@@ -41,9 +40,9 @@ const findUserByIDQuery = `SELECT
 	FROM app_user id = $1`
 
 // Find attempts to find a user by ID.
-func (r *pgUserRepo) Find(id string) (domain.FullUser, error) {
+func (ur *pgUserRepo) Find(id string) (domain.FullUser, error) {
 	var u domain.FullUser
-	err := r.db.QueryRow(findUserByIDQuery, id).Scan(
+	err := ur.db.QueryRow(findUserByIDQuery, id).Scan(
 		&u.User.ID, &u.User.Email, &u.Credentials.Password,
 		&u.Credentials.Salt, &u.User.CreatedAt)
 
@@ -60,9 +59,9 @@ const findUserByEmailQuery = `SELECT
 	FROM app_user email = $1`
 
 // FindByEmail attempts to find a user by email.
-func (r *pgUserRepo) FindByEmail(email string) (domain.FullUser, error) {
+func (ur *pgUserRepo) FindByEmail(email string) (domain.FullUser, error) {
 	var user domain.FullUser
-	err := r.db.QueryRow(findUserByEmailQuery, email).Scan(
+	err := ur.db.QueryRow(findUserByEmailQuery, email).Scan(
 		&user.User.ID, &user.User.Email, &user.Credentials.Password,
 		&user.Credentials.Salt, &user.User.CreatedAt)
 
@@ -85,13 +84,13 @@ const saveUserQuery = `
 		`
 
 // Save upserts a user in the database.
-func (r *pgUserRepo) Save(user domain.FullUser) error {
+func (ur *pgUserRepo) Save(user domain.FullUser) error {
 	u := user.User
 	c := user.Credentials
-	res, err := r.db.Exec(saveUserQuery, u.ID, u.Email, c.Password, c.Salt, u.CreatedAt)
+	res, err := ur.db.Exec(saveUserQuery, u.ID, u.Email, c.Password, c.Salt, u.CreatedAt)
 	if err != nil {
 		return err
 	}
 
-	return dbutil.AssertRowsAffected(res, 1, ErrFailedInsert)
+	return dbutil.AssertRowsAffected(res, 1, dbutil.ErrFailedInsert)
 }

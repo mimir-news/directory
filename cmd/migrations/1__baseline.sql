@@ -12,7 +12,7 @@ CREATE TABLE app_user (
 CREATE TABLE session (
   id VARCHAR(50) PRIMARY KEY,
   user_id VARCHAR(50) REFERENCES app_user(id),
-  created_at DATETIME
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE one_time_credential (

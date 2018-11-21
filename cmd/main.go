@@ -30,7 +30,7 @@ func newServer(e *env, conf config) *http.Server {
 	r.PUT("/v1/password/reset", placeholderHandler)
 
 	// Secured user routes
-	r.GET("/v1/users/:userId", placeholderHandler)
+	r.GET("/v1/users/:userId", e.handleGetUser)
 	r.PUT("/v1/users/:userId/password", placeholderHandler)
 	r.PUT("/v1/users/:userId/email", placeholderHandler)
 	r.DELETE("/v1/users/:userId", placeholderHandler)

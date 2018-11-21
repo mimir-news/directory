@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mimir-news/pkg/id"
+
 	"github.com/mimir-news/pkg/httputil/auth"
 
 	"github.com/mimir-news/directory/pkg/domain"
@@ -108,4 +110,64 @@ func TestHandleLogin(t *testing.T) {
 	req = createTestPostRequest("client-id", "", "/v1/login", wrongCredentials)
 	res = performTestRequest(server.Handler, req)
 	assert.Equal(http.StatusUnauthorized, res.Code)
+}
+
+func TestHandleGetUser(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	clientID := id.New()
+	expectedUser := domain.FullUser{
+		User: user.User{
+			ID:    userID,
+			Email: "mail@mail.com",
+		},
+	}
+
+	conf := getTestConfig()
+	userRepo := &mockUserRepo{
+		findUser: expectedUser,
+	}
+	mockEnv := getTestEnv(conf, userRepo)
+	authToken, err := mockEnv.tokenSigner.New(userID, clientID)
+	assert.NoError(err)
+
+	// Setup: Get user happy path.
+	server := newServer(mockEnv, conf)
+	req := createTestGetRequest(clientID, authToken, "/v1/users/"+userID)
+	res := performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusOK, res.Code)
+	var user user.User
+	err = json.NewDecoder(res.Body).Decode(&user)
+	assert.NoError(err)
+	assert.Equal(expectedUser.User.ID, user.ID)
+	assert.Equal(expectedUser.User.ID, userRepo.findArg)
+
+	// Setup: Missing token.
+	userRepo.findArg = ""
+	req = createTestGetRequest(clientID, "", "/v1/users/"+userID)
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusUnauthorized, res.Code)
+	assert.Equal("", userRepo.findArg)
+
+	// Setup: Missmatching user ids.
+	userRepo.findArg = ""
+	req = createTestGetRequest(clientID, authToken, "/v1/users/wrong-user-id")
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusForbidden, res.Code)
+	assert.Equal("", userRepo.findArg)
+
+	// Setup: No user found.
+	userRepo.findUser = domain.FullUser{}
+	userRepo.findErr = repository.ErrNoSuchUser
+	userRepo.findArg = ""
+	req = createTestGetRequest(clientID, authToken, "/v1/users/"+userID)
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusNotFound, res.Code)
+	assert.Equal(userID, userRepo.findArg)
+
 }

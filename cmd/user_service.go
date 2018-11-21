@@ -64,6 +64,40 @@ func (e *env) handleLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, user.NewToken(encodedToken))
 }
 
+func (e *env) handleGetUser(c *gin.Context) {
+	userID, err := getUserIDFromPath(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	fullUser, err := e.userRepo.Find(userID)
+	if err == repository.ErrNoSuchUser {
+		c.Error(httputil.ErrNotFound())
+		return
+	}
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, fullUser.User)
+}
+
+func getUserIDFromPath(c *gin.Context) (string, error) {
+	authID, err := auth.GetUserID(c)
+	if err != nil {
+		return "", err
+	}
+
+	userID := c.Param("userId")
+	if userID != authID {
+		return "", httputil.ErrForbidden()
+	}
+
+	return userID, nil
+}
+
 func (e *env) createNewUser(credentials user.Credentials) (user.User, error) {
 	secureCreds, err := e.passwordSvc.Create(credentials)
 	if err != nil {
