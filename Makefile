@@ -9,4 +9,7 @@ build:
 	docker build -t $(IMAGE) .
 
 build-test:
-	docker build -t "$(NAME)-test" -f Dockerfile.test .
+	docker build -t "$(NAME)-test:$(VERSION)" -f Dockerfile.test .
+
+run-docker-test:
+	docker run --rm $(NAME)-test:$(VERSION)

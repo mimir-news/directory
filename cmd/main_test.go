@@ -71,11 +71,16 @@ func createTestRequest(clientID, token, route, method string, body interface{}) 
 
 func getTestEnv(conf config, userRepo repository.UserRepo,
 	sessionRepo repository.SessionRepo) *env {
+
+	passwordSvc := service.NewPasswordService(userRepo, conf.PasswordPepper, conf.PasswordEncryptionKey)
+	tokenSigner := auth.NewSigner(conf.TokenSecret, conf.TokenVerificationKey, 24*time.Hour)
+	userSvc := service.NewUserService(passwordSvc, tokenSigner, userRepo, sessionRepo)
 	return &env{
 		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
-		passwordSvc: service.NewPasswordService(userRepo, conf.PasswordPepper, conf.PasswordEncryptionKey),
-		tokenSigner: auth.NewSigner(conf.TokenSecret, conf.TokenVerificationKey, 24*time.Hour),
+		passwordSvc: passwordSvc,
+		userSvc:     userSvc,
+		tokenSigner: tokenSigner,
 	}
 }
 
