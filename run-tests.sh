@@ -1,3 +1,5 @@
+#!/bin/bash
+
 TARGET_FOLDERS=(
     "./cmd/"
     "./pkg/domain/"

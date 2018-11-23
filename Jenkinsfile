@@ -27,7 +27,7 @@ node() {
     stage('Test') {
         def testImage = "$projectName-test:$version"
         sh "docker build -t $testImage -f Dockerfile.test ."
-        sh "docker run --rm $testImage"
+        sh "docker run --rm -t $testImage"
         sh "docker rmi $testImage"
     }
 
