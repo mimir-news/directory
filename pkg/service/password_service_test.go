@@ -224,3 +224,13 @@ func (r *mockUserRepo) Delete(id string) error {
 	r.deleteArg = id
 	return r.deleteErr
 }
+
+type mockSessionRepo struct {
+	saveErr error
+	saveArg domain.Session
+}
+
+func (sr *mockSessionRepo) Save(session domain.Session) error {
+	sr.saveArg = session
+	return sr.saveErr
+}
