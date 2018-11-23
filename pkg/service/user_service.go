@@ -28,7 +28,7 @@ func NewUserService(
 	pwdSvc *PasswordService, signer auth.Signer,
 	userRepo repository.UserRepo, sessionRepo repository.SessionRepo) UserService {
 	return &userSvc{
-		passwordSvc: *pwdSvc,
+		passwordSvc: pwdSvc,
 		tokenSigner: signer,
 		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
@@ -36,7 +36,7 @@ func NewUserService(
 }
 
 type userSvc struct {
-	passwordSvc PasswordService
+	passwordSvc *PasswordService
 	tokenSigner auth.Signer
 	userRepo    repository.UserRepo
 	sessionRepo repository.SessionRepo
