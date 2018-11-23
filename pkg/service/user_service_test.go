@@ -56,3 +56,29 @@ func TestGetUser(t *testing.T) {
 	assert.Equal(testError, err)
 	assert.Equal("", u.ID)
 }
+
+func TestDeleteUser(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := "user-id"
+
+	userRepo := &mockUserRepo{
+		deleteErr: repository.ErrNoSuchUser,
+	}
+	userSvc := service.NewUserService(nil, nil, userRepo, nil)
+
+	err := userSvc.Delete(userID)
+	assert.Error(err)
+	httpErr, ok := err.(*httputil.Error)
+	assert.True(ok)
+	assert.Equal(http.StatusNotFound, httpErr.StatusCode)
+
+	userRepo = &mockUserRepo{
+		deleteErr: testError,
+	}
+	userSvc = service.NewUserService(nil, nil, userRepo, nil)
+
+	err = userSvc.Delete(userID)
+	assert.Equal(testError, err)
+	assert.Equal(userID, userRepo.deleteArg)
+}
