@@ -27,14 +27,12 @@ func newServer(e *env, conf config) *http.Server {
 	// Unsecured enpoints
 	r.POST("/v1/users", e.handleUserCreation)
 	r.POST("/v1/login", e.handleLogin)
-	r.PUT("/v1/password", placeholderHandler)
 
 	// Secured user routes
 	r.GET("/v1/users/:userId", e.handleGetUser)
 	r.PUT("/v1/users/:userId/password", e.handleChangePassword)
-	r.PUT("/v1/users/:userId/email", placeholderHandler)
+	r.PUT("/v1/users/:userId/email", e.handleChangeEmail)
 	r.DELETE("/v1/users/:userId", e.handleDeleteUser)
-	r.GET("/v1/users/:userId/watchlists", placeholderHandler)
 
 	// Secured watchlist routes
 	r.POST("/v1/watchlists/:name", placeholderHandler)

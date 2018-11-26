@@ -167,3 +167,50 @@ func TestUserSvcChangePassword(t *testing.T) {
 	assert.Equal("", savedCreds.Email)
 
 }
+
+func TestChangeEmail(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	oldEmail := "mail@mail.com"
+	storedUser := domain.FullUser{
+		User: user.User{
+			ID:    userID,
+			Email: oldEmail,
+		},
+		Credentials: domain.StoredCredentials{
+			Email:    oldEmail,
+			Password: "old-hashed-and-encrypted-password",
+			Salt:     "3old-hashed-and-encrypted-salt",
+		},
+	}
+
+	userRepo := &mockUserRepo{
+		findUser: storedUser,
+	}
+
+	userSvc := service.NewUserService(nil, nil, userRepo, nil)
+
+	newEmail := "new.email@mail.com"
+	err := userSvc.ChangeEmail(userID, newEmail)
+	assert.NoError(err)
+	savedUser := userRepo.saveArg
+	assert.Equal(userID, savedUser.User.ID)
+	assert.Equal(newEmail, savedUser.User.Email)
+	assert.Equal(newEmail, savedUser.Credentials.Email)
+	assert.Equal(storedUser.Credentials.Password, savedUser.Credentials.Password)
+	assert.Equal(storedUser.Credentials.Salt, savedUser.Credentials.Salt)
+
+	userRepo.findErr = repository.ErrNoSuchUser
+	userRepo.findUser = domain.FullUser{}
+	userRepo.saveArg = domain.FullUser{}
+
+	err = userSvc.ChangeEmail(userID, newEmail)
+	assert.Error(err)
+	httpError, ok := err.(*httputil.Error)
+	assert.True(ok)
+	assert.Equal(http.StatusNotFound, httpError.StatusCode)
+	savedUser = userRepo.saveArg
+	assert.Equal("", savedUser.User.ID)
+
+}

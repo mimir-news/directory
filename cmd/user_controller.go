@@ -101,6 +101,28 @@ func (e *env) handleChangePassword(c *gin.Context) {
 	httputil.SendOK(c)
 }
 
+func (e *env) handleChangeEmail(c *gin.Context) {
+	userID, err := getUserIDFromPath(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	u, err := getUserFromBody(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	err = e.userSvc.ChangeEmail(userID, u.Email)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	httputil.SendOK(c)
+}
+
 func getUserIDFromPath(c *gin.Context) (string, error) {
 	authID, err := auth.GetUserID(c)
 	if err != nil {
@@ -113,6 +135,18 @@ func getUserIDFromPath(c *gin.Context) (string, error) {
 	}
 
 	return userID, nil
+}
+
+func getUserFromBody(c *gin.Context) (user.User, error) {
+	var u user.User
+	err := c.ShouldBindJSON(&u)
+	if err != nil {
+		return u, httputil.ErrBadRequest()
+	}
+	if !u.Valid() {
+		return u, httputil.ErrBadRequest()
+	}
+	return u, nil
 }
 
 func getCredentials(c *gin.Context) (user.Credentials, error) {

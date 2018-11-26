@@ -22,6 +22,7 @@ type UserService interface {
 	Delete(string) error
 	Authenticate(user.Credentials, string) (user.Token, error)
 	ChangePassword(user.PasswordChange) error
+	ChangeEmail(userID, newEmail string) error
 }
 
 // NewUserService creates a new UserService using the default implementation.
@@ -112,6 +113,20 @@ func (us *userSvc) ChangePassword(change user.PasswordChange) error {
 	}
 
 	return us.updateUserCredentials(newCreds)
+}
+
+// ChangeEmail changes the email of a given user.
+func (us *userSvc) ChangeEmail(userID, newEmail string) error {
+	savedUser, err := us.userRepo.Find(userID)
+	if err == repository.ErrNoSuchUser {
+		return httputil.ErrNotFound()
+	} else if err != nil {
+		return err
+	}
+
+	savedUser.User.Email = newEmail
+	savedUser.Credentials.Email = newEmail
+	return us.userRepo.Save(savedUser)
 }
 
 func (us *userSvc) createNewUser(credentials user.Credentials) (user.User, error) {

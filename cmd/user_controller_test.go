@@ -293,3 +293,58 @@ func TestHandlePasswordChange(t *testing.T) {
 	assert.Equal("", savedUser.User.ID)
 
 }
+
+func TestHandleEmailChange(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	clientID := id.New()
+	userEmail := "main@mail.com"
+
+	expectedUser := domain.FullUser{
+		User: user.User{
+			ID:    userID,
+			Email: userEmail,
+		},
+		Credentials: domain.StoredCredentials{
+			Email: userEmail,
+		},
+	}
+
+	conf := getTestConfig()
+	userRepo := &mockUserRepo{
+		findUser: expectedUser,
+	}
+	mockEnv := getTestEnv(conf, userRepo, nil)
+	signer := getTestSigner(conf)
+	authToken, err := signer.New(id.New(), userID, clientID)
+	assert.NoError(err)
+
+	u := user.User{
+		ID:    userID,
+		Email: userEmail,
+	}
+
+	// Setup: Change email happy path.
+	server := newServer(mockEnv, conf)
+	req := createTestPutRequest(clientID, authToken, "/v1/users/"+userID+"/email", u)
+	res := performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusOK, res.Code)
+	savedUser := userRepo.saveArg
+	assert.Equal(u.Email, savedUser.User.Email)
+	assert.Equal(u.Email, savedUser.Credentials.Email)
+	assert.Equal(userID, savedUser.User.ID)
+	assert.Equal(userID, userRepo.findArg)
+
+	// Setup: Change password no email provided.
+	userRepo.saveArg = domain.FullUser{}
+	userRepo.findArg = ""
+	req = createTestPutRequest(clientID, authToken, "/v1/users/"+userID+"/email", user.User{})
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusBadRequest, res.Code)
+	assert.Equal("", userRepo.saveArg.User.ID)
+	assert.Equal("", userRepo.findArg)
+
+}
