@@ -121,6 +121,9 @@ func getCredentials(c *gin.Context) (user.Credentials, error) {
 	if err != nil {
 		return credentials, httputil.ErrBadRequest()
 	}
+	if !credentials.Valid() {
+		return credentials, httputil.ErrBadRequest()
+	}
 	return credentials, nil
 }
 
@@ -128,6 +131,9 @@ func getPasswordChange(c *gin.Context) (user.PasswordChange, error) {
 	var change user.PasswordChange
 	err := c.ShouldBindJSON(&change)
 	if err != nil {
+		return change, httputil.ErrBadRequest()
+	}
+	if !change.Valid() {
 		return change, httputil.ErrBadRequest()
 	}
 	return change, nil

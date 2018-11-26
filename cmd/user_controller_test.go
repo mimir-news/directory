@@ -132,7 +132,7 @@ func TestHandleGetUser(t *testing.T) {
 	}
 	mockEnv := getTestEnv(conf, userRepo, nil)
 	signer := getTestSigner(conf)
-	authToken, err := signer.New(userID, clientID)
+	authToken, err := signer.New(id.New(), userID, clientID)
 	assert.NoError(err)
 
 	// Setup: Get user happy path.
@@ -185,7 +185,7 @@ func TestHandleDeleteUser(t *testing.T) {
 	userRepo := &mockUserRepo{}
 	mockEnv := getTestEnv(conf, userRepo, nil)
 	signer := getTestSigner(conf)
-	authToken, err := signer.New(userID, clientID)
+	authToken, err := signer.New(id.New(), userID, clientID)
 	assert.NoError(err)
 
 	// Setup: Get user happy path.
@@ -249,7 +249,7 @@ func TestHandlePasswordChange(t *testing.T) {
 	}
 	mockEnv := getTestEnv(conf, userRepo, nil)
 	signer := getTestSigner(conf)
-	authToken, err := signer.New(userID, clientID)
+	authToken, err := signer.New(id.New(), userID, clientID)
 	assert.NoError(err)
 
 	pwdChange := user.PasswordChange{
@@ -285,7 +285,7 @@ func TestHandlePasswordChange(t *testing.T) {
 
 	// Setup: Change password no change provided.
 	userRepo.saveArg = domain.FullUser{}
-	req = createTestPutRequest(clientID, authToken, "/v1/users/"+userID+"/password", []string{})
+	req = createTestPutRequest(clientID, authToken, "/v1/users/"+userID+"/password", user.PasswordChange{})
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusBadRequest, res.Code)

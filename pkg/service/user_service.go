@@ -142,12 +142,12 @@ func (us *userSvc) ensureUserDoesNotExist(email string) error {
 }
 
 func (us *userSvc) createSessionToken(userID, clientID string) (string, error) {
-	token, err := us.tokenSigner.New(userID, clientID)
+	session := domain.NewSession(userID)
+	token, err := us.tokenSigner.New(session.ID, userID, clientID)
 	if err != nil {
 		return "", err
 	}
 
-	session := domain.NewSession(userID)
 	err = us.sessionRepo.Save(session)
 	if err != nil {
 		return "", err
