@@ -12,11 +12,8 @@ import (
 )
 
 type env struct {
-	userRepo    repository.UserRepo
-	sessionRepo repository.SessionRepo
 	passwordSvc *service.PasswordService
 	userSvc     service.UserService
-	tokenSigner auth.Signer
 	db          *sql.DB
 }
 
@@ -38,11 +35,8 @@ func setupEnv(conf config) *env {
 	userService := service.NewUserService(passwordSvc, signer, userRepo, sessionRepo)
 
 	return &env{
-		userRepo:    userRepo,
-		sessionRepo: sessionRepo,
 		passwordSvc: passwordSvc,
 		userSvc:     userService,
-		tokenSigner: signer,
 		db:          db,
 	}
 }

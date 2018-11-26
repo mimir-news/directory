@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/mimir-news/pkg/httputil/auth"
@@ -77,6 +78,29 @@ func (e *env) handleDeleteUser(c *gin.Context) {
 	httputil.SendOK(c)
 }
 
+func (e *env) handleChangePassword(c *gin.Context) {
+	_, err := getUserIDFromPath(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	change, err := getPasswordChange(c)
+	fmt.Println(err)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	err = e.userSvc.ChangePassword(change)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	httputil.SendOK(c)
+}
+
 func getUserIDFromPath(c *gin.Context) (string, error) {
 	authID, err := auth.GetUserID(c)
 	if err != nil {
@@ -93,11 +117,20 @@ func getUserIDFromPath(c *gin.Context) (string, error) {
 
 func getCredentials(c *gin.Context) (user.Credentials, error) {
 	var credentials user.Credentials
-	err := c.BindJSON(&credentials)
+	err := c.ShouldBindJSON(&credentials)
 	if err != nil {
 		return credentials, httputil.ErrBadRequest()
 	}
 	return credentials, nil
+}
+
+func getPasswordChange(c *gin.Context) (user.PasswordChange, error) {
+	var change user.PasswordChange
+	err := c.ShouldBindJSON(&change)
+	if err != nil {
+		return change, httputil.ErrBadRequest()
+	}
+	return change, nil
 }
 
 func errUserAlreadyExists() error {

@@ -76,12 +76,13 @@ func getTestEnv(conf config, userRepo repository.UserRepo,
 	tokenSigner := auth.NewSigner(conf.TokenSecret, conf.TokenVerificationKey, 24*time.Hour)
 	userSvc := service.NewUserService(passwordSvc, tokenSigner, userRepo, sessionRepo)
 	return &env{
-		userRepo:    userRepo,
-		sessionRepo: sessionRepo,
 		passwordSvc: passwordSvc,
 		userSvc:     userSvc,
-		tokenSigner: tokenSigner,
 	}
+}
+
+func getTestSigner(conf config) auth.Signer {
+	return auth.NewSigner(conf.TokenSecret, conf.TokenVerificationKey, 24*time.Hour)
 }
 
 func getTestConfig() config {

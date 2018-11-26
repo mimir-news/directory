@@ -8,6 +8,7 @@ import (
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/directory/pkg/service"
 	"github.com/mimir-news/pkg/httputil"
+	"github.com/mimir-news/pkg/id"
 	"github.com/mimir-news/pkg/schema/user"
 	"github.com/stretchr/testify/assert"
 )
@@ -81,4 +82,88 @@ func TestDeleteUser(t *testing.T) {
 	err = userSvc.Delete(userID)
 	assert.Equal(testError, err)
 	assert.Equal(userID, userRepo.deleteArg)
+}
+
+func TestUserSvcChangePassword(t *testing.T) {
+	assert := assert.New(t)
+
+	storedUser := domain.FullUser{
+		User: user.User{
+			ID:    id.New(),
+			Email: "mail@mail.com",
+		},
+		Credentials: domain.StoredCredentials{
+			Email:    "mail@mail.com",
+			Password: "S5UeZOWCDkIfP/5LUDpyhIY0l6+aow+CmkBEVtHqpebhe04vb6kDbPaD/wo05fs6x1lvJfI/6YZ66zbQ8X2lHaEThp4f1Zl0exk7j/wow740KbWZHf9DSA==", // Hashed and encrypted password.
+			Salt:     "3MQEKd3NVnU+WQFQxo8JpYWrTrqXOiwro4MwLwnsckWXinE=",                                                                         // Encrypted salt
+		},
+	}
+
+	userRepo := &mockUserRepo{
+		findByEmailUser: storedUser,
+	}
+
+	passwordSvc := service.NewPasswordService(userRepo, "my-pepper", "my-encryption-key")
+	userSvc := service.NewUserService(passwordSvc, nil, userRepo, nil)
+
+	pwdChange := user.PasswordChange{
+		New:      "new-password",
+		Repeated: "new-password",
+		Old: user.Credentials{
+			Email:    storedUser.User.Email,
+			Password: "super-secret-password",
+		},
+	}
+
+	err := userSvc.ChangePassword(pwdChange)
+	assert.NoError(err)
+	assert.Equal(pwdChange.Old.Email, userRepo.findByEmailArg)
+	savedCreds := userRepo.saveArg.Credentials
+	assert.NotEqual(storedUser.Credentials.Salt, savedCreds.Salt)
+	assert.NotEqual("", savedCreds.Salt)
+	assert.NotEqual(storedUser.Credentials.Password, savedCreds.Password)
+	assert.NotEqual("", savedCreds.Password)
+	assert.Equal(storedUser.Credentials.Email, savedCreds.Email)
+
+	inconsistentPwdChange := user.PasswordChange{
+		New:      "new-password",
+		Repeated: "other-new-password",
+		Old: user.Credentials{
+			Email:    storedUser.User.Email,
+			Password: "super-secret-password",
+		},
+	}
+
+	userRepo.findByEmailArg = ""
+	userRepo.saveArg = domain.FullUser{}
+	err = userSvc.ChangePassword(inconsistentPwdChange)
+	assert.Error(err)
+	httpError, ok := err.(*httputil.Error)
+	assert.True(ok)
+	assert.Equal(http.StatusBadRequest, httpError.StatusCode)
+	assert.Equal("", userRepo.findByEmailArg)
+	savedCreds = userRepo.saveArg.Credentials
+	assert.Equal("", savedCreds.Salt)
+	assert.Equal("", savedCreds.Password)
+	assert.Equal("", savedCreds.Email)
+
+	wrongPwdChange := user.PasswordChange{
+		New:      "new-password",
+		Repeated: "new-password",
+		Old: user.Credentials{
+			Email:    storedUser.User.Email,
+			Password: "wrong-password",
+		},
+	}
+
+	userRepo.findByEmailArg = ""
+	userRepo.saveArg = domain.FullUser{}
+	err = userSvc.ChangePassword(wrongPwdChange)
+	assert.Error(err)
+	assert.Equal(wrongPwdChange.Old.Email, userRepo.findByEmailArg)
+	savedCreds = userRepo.saveArg.Credentials
+	assert.Equal("", savedCreds.Salt)
+	assert.Equal("", savedCreds.Password)
+	assert.Equal("", savedCreds.Email)
+
 }

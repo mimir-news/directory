@@ -21,6 +21,7 @@ type UserService interface {
 	Create(user.Credentials) (user.User, error)
 	Delete(string) error
 	Authenticate(user.Credentials, string) (user.Token, error)
+	ChangePassword(user.PasswordChange) error
 }
 
 // NewUserService creates a new UserService using the default implementation.
@@ -99,6 +100,20 @@ func (us *userSvc) Authenticate(credentials user.Credentials, clientID string) (
 	return user.NewToken(encodedToken), nil
 }
 
+// ChangePassword changes a users password if valid credentials are provided.
+func (us *userSvc) ChangePassword(change user.PasswordChange) error {
+	if change.New != change.Repeated {
+		return errPasswordMissmatch()
+	}
+
+	newCreds, err := us.passwordSvc.ChangePassword(change.New, change.Old)
+	if err != nil {
+		return err
+	}
+
+	return us.updateUserCredentials(newCreds)
+}
+
 func (us *userSvc) createNewUser(credentials user.Credentials) (user.User, error) {
 	secureCreds, err := us.passwordSvc.Create(credentials)
 	if err != nil {
@@ -141,6 +156,24 @@ func (us *userSvc) createSessionToken(userID, clientID string) (string, error) {
 	return token, nil
 }
 
+func (us *userSvc) updateUserCredentials(newCreds domain.StoredCredentials) error {
+	user, err := us.userRepo.FindByEmail(newCreds.Email)
+	if err != nil {
+		return err
+	}
+
+	newUser := domain.FullUser{
+		User:        user.User,
+		Credentials: newCreds,
+	}
+
+	return us.userRepo.Save(newUser)
+}
+
 func errUserAlreadyExists() error {
 	return httputil.NewError("User already exists", http.StatusConflict)
+}
+
+func errPasswordMissmatch() error {
+	return httputil.NewError("Passwords do not match", http.StatusBadRequest)
 }

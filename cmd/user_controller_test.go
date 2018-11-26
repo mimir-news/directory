@@ -131,7 +131,8 @@ func TestHandleGetUser(t *testing.T) {
 		findUser: expectedUser,
 	}
 	mockEnv := getTestEnv(conf, userRepo, nil)
-	authToken, err := mockEnv.tokenSigner.New(userID, clientID)
+	signer := getTestSigner(conf)
+	authToken, err := signer.New(userID, clientID)
 	assert.NoError(err)
 
 	// Setup: Get user happy path.
@@ -183,7 +184,8 @@ func TestHandleDeleteUser(t *testing.T) {
 	conf := getTestConfig()
 	userRepo := &mockUserRepo{}
 	mockEnv := getTestEnv(conf, userRepo, nil)
-	authToken, err := mockEnv.tokenSigner.New(userID, clientID)
+	signer := getTestSigner(conf)
+	authToken, err := signer.New(userID, clientID)
 	assert.NoError(err)
 
 	// Setup: Get user happy path.
@@ -218,5 +220,76 @@ func TestHandleDeleteUser(t *testing.T) {
 	// Test
 	assert.Equal(http.StatusNotFound, res.Code)
 	assert.Equal(userID, userRepo.deleteArg)
+
+}
+
+func TestHandlePasswordChange(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	clientID := id.New()
+	userEmail := "main@mail.com"
+
+	expectedUser := domain.FullUser{
+		User: user.User{
+			ID:        userID,
+			Email:     userEmail,
+			CreatedAt: time.Now().UTC(),
+		},
+		Credentials: domain.StoredCredentials{
+			Email:    userEmail,
+			Password: "S5UeZOWCDkIfP/5LUDpyhIY0l6+aow+CmkBEVtHqpebhe04vb6kDbPaD/wo05fs6x1lvJfI/6YZ66zbQ8X2lHaEThp4f1Zl0exk7j/wow740KbWZHf9DSA==", // Hashed and encrypted password.
+			Salt:     "3MQEKd3NVnU+WQFQxo8JpYWrTrqXOiwro4MwLwnsckWXinE=",                                                                         // Encrypted salt
+		},
+	}
+
+	conf := getTestConfig()
+	userRepo := &mockUserRepo{
+		findByEmailUser: expectedUser,
+	}
+	mockEnv := getTestEnv(conf, userRepo, nil)
+	signer := getTestSigner(conf)
+	authToken, err := signer.New(userID, clientID)
+	assert.NoError(err)
+
+	pwdChange := user.PasswordChange{
+		New:      "new-password",
+		Repeated: "new-password",
+		Old: user.Credentials{
+			Email:    userEmail,
+			Password: "super-secret-password",
+		},
+	}
+
+	// Setup: Change password happy path.
+	server := newServer(mockEnv, conf)
+	req := createTestPutRequest(clientID, authToken, "/v1/users/"+userID+"/password", pwdChange)
+	res := performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusOK, res.Code)
+	savedUser := userRepo.saveArg
+	assert.Equal(userID, savedUser.User.ID)
+	assert.NotEqual(expectedUser.Credentials.Password, savedUser.Credentials.Password)
+	assert.NotEqual("", savedUser.Credentials.Password)
+	assert.NotEqual(expectedUser.Credentials.Salt, savedUser.Credentials.Salt)
+	assert.NotEqual("", savedUser.Credentials.Salt)
+
+	// Setup: Change password wrong user id.
+	userRepo.saveArg = domain.FullUser{}
+	req = createTestPutRequest(clientID, authToken, "/v1/users/wrong-id/password", pwdChange)
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusForbidden, res.Code)
+	savedUser = userRepo.saveArg
+	assert.Equal("", savedUser.User.ID)
+
+	// Setup: Change password no change provided.
+	userRepo.saveArg = domain.FullUser{}
+	req = createTestPutRequest(clientID, authToken, "/v1/users/"+userID+"/password", []string{})
+	res = performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusBadRequest, res.Code)
+	savedUser = userRepo.saveArg
+	assert.Equal("", savedUser.User.ID)
 
 }
