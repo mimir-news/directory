@@ -203,6 +203,10 @@ type mockUserRepo struct {
 
 	deleteErr error
 	deleteArg string
+
+	findWatchlistsRes []user.Watchlist
+	findWatchlistsErr error
+	findWatchlistsArg string
 }
 
 func (r *mockUserRepo) Find(id string) (domain.FullUser, error) {
@@ -223,6 +227,11 @@ func (r *mockUserRepo) Save(user domain.FullUser) error {
 func (r *mockUserRepo) Delete(id string) error {
 	r.deleteArg = id
 	return r.deleteErr
+}
+
+func (r *mockUserRepo) FindWatchlists(userID string) ([]user.Watchlist, error) {
+	r.findWatchlistsArg = userID
+	return r.findWatchlistsRes, r.findWatchlistsErr
 }
 
 type mockSessionRepo struct {

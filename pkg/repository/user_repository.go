@@ -3,9 +3,14 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"log"
+	"sort"
+	"time"
 
 	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/pkg/dbutil"
+	"github.com/mimir-news/pkg/schema/stock"
+	"github.com/mimir-news/pkg/schema/user"
 )
 
 // Common errors.
@@ -23,6 +28,7 @@ type UserRepo interface {
 	FindByEmail(email string) (domain.FullUser, error)
 	Save(user domain.FullUser) error
 	Delete(id string) error
+	FindWatchlists(userID string) ([]user.Watchlist, error)
 }
 
 // NewUserRepo creates a new UserRepo using the default implementation.
@@ -112,4 +118,106 @@ func (ur *pgUserRepo) Delete(id string) error {
 	}
 
 	return dbutil.AssertRowsAffected(res, 1, ErrNoSuchUser)
+}
+
+type watchlistMember struct {
+	listID        string
+	listName      string
+	listCreatedAt time.Time
+	stockSymbol   string
+	stockName     string
+}
+
+const findUserWatchlistsQuery = `
+	SELECT w.id, w.name, w.created_at, s.symbol, s.name
+	FROM watchlist w 
+	INNER JOIN watchlist_member m ON m.watchlist_id = w.id
+	INNER JOIN stock s ON s.symbol = m.symbol
+	WHERE w.user_id = $1
+	ORDER BY w.id, m.created_at`
+
+func (ur *pgUserRepo) FindWatchlists(userID string) ([]user.Watchlist, error) {
+	rows, err := ur.db.Query(findUserWatchlistsQuery, userID)
+	if err == sql.ErrNoRows {
+		return []user.Watchlist{}, nil
+	} else if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	members, err := extractWatchlistMembers(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return createWatchlists(members), nil
+}
+
+func createWatchlists(members []watchlistMember) []user.Watchlist {
+	watchlists := make([]user.Watchlist, 0)
+	for _, members := range mapMembersByListID(members) {
+		watchlist, err := mapMembersToWatchlist(members)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		watchlists = append(watchlists, watchlist)
+	}
+
+	sortWatchlists(watchlists)
+	return watchlists
+}
+
+func sortWatchlists(watchlists []user.Watchlist) {
+	sort.Slice(watchlists, func(i, j int) bool {
+		return watchlists[i].CreatedAt.Before(watchlists[j].CreatedAt)
+	})
+}
+
+func mapMembersByListID(members []watchlistMember) map[string][]watchlistMember {
+	listMap := make(map[string][]watchlistMember)
+	for _, member := range members {
+		existingMembers, ok := listMap[member.listID]
+		if ok {
+			listMap[member.listID] = append(existingMembers, member)
+			continue
+		}
+		listMap[member.listID] = []watchlistMember{member}
+	}
+	return listMap
+}
+
+func mapMembersToWatchlist(members []watchlistMember) (user.Watchlist, error) {
+	if len(members) < 1 {
+		return user.Watchlist{}, errors.New("No members in watchlist")
+	}
+	firstMember := members[0]
+
+	stocks := make([]stock.Stock, 0, len(members))
+	for _, member := range members {
+		s := stock.Stock{Symbol: member.stockSymbol, Name: member.stockName}
+		stocks = append(stocks, s)
+	}
+
+	watchlist := user.Watchlist{
+		ID:        firstMember.listID,
+		Name:      firstMember.listName,
+		Stocks:    stocks,
+		CreatedAt: firstMember.listCreatedAt,
+	}
+	return watchlist, nil
+}
+
+func extractWatchlistMembers(rows *sql.Rows) ([]watchlistMember, error) {
+	members := make([]watchlistMember, 0)
+	for rows.Next() {
+		var m watchlistMember
+		err := rows.Scan(&m.listID, &m.listName, &m.listCreatedAt, &m.stockSymbol, &m.stockName)
+		if err != nil {
+			return nil, err
+		}
+		members = append(members, m)
+	}
+
+	return members, nil
 }

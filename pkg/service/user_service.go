@@ -46,14 +46,21 @@ type userSvc struct {
 
 // Get gets the user with the provided id.
 func (us *userSvc) Get(userID string) (user.User, error) {
-	u, err := us.userRepo.Find(userID)
+	fullUser, err := us.userRepo.Find(userID)
 	if err == repository.ErrNoSuchUser {
 		return emptyUser, httputil.ErrNotFound()
 	} else if err != nil {
 		return emptyUser, err
 	}
 
-	return u.User, nil
+	u := fullUser.User
+	watchlists, err := us.userRepo.FindWatchlists(u.ID)
+	if err != nil {
+		return emptyUser, err
+	}
+
+	u.Watchlists = watchlists
+	return u, nil
 }
 
 // Create creates new user based the given credentials.

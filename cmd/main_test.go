@@ -15,6 +15,7 @@ import (
 	"github.com/mimir-news/directory/pkg/service"
 	"github.com/mimir-news/pkg/httputil"
 	"github.com/mimir-news/pkg/httputil/auth"
+	"github.com/mimir-news/pkg/schema/user"
 )
 
 var (
@@ -118,6 +119,10 @@ type mockUserRepo struct {
 
 	deleteErr error
 	deleteArg string
+
+	findWatchlistsRes []user.Watchlist
+	findWatchlistsErr error
+	findWatchlistsArg string
 }
 
 func (ur *mockUserRepo) Find(id string) (domain.FullUser, error) {
@@ -138,6 +143,11 @@ func (ur *mockUserRepo) Save(user domain.FullUser) error {
 func (ur *mockUserRepo) Delete(id string) error {
 	ur.deleteArg = id
 	return ur.deleteErr
+}
+
+func (r *mockUserRepo) FindWatchlists(userID string) ([]user.Watchlist, error) {
+	r.findWatchlistsArg = userID
+	return r.findWatchlistsRes, r.findWatchlistsErr
 }
 
 type mockSessionRepo struct {

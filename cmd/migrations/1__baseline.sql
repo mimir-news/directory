@@ -34,6 +34,7 @@ CREATE TABLE watchlist (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100),
     user_id VARCHAR(50) REFERENCES app_user(id),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(name, user_id)
 );
 
