@@ -17,11 +17,11 @@ var (
 
 // UserService service responsible for handling users.
 type UserService interface {
-	Get(string) (user.User, error)
-	Create(user.Credentials) (user.User, error)
-	Delete(string) error
-	Authenticate(user.Credentials, string) (user.Token, error)
-	ChangePassword(user.PasswordChange) error
+	Get(userID string) (user.User, error)
+	Create(credentials user.Credentials) (user.User, error)
+	Delete(userID string) error
+	Authenticate(credentials user.Credentials, clientID string) (user.Token, error)
+	ChangePassword(change user.PasswordChange) error
 	ChangeEmail(userID, newEmail string) error
 }
 

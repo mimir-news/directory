@@ -13,7 +13,7 @@ import (
 	"github.com/mimir-news/pkg/schema/user"
 )
 
-// Common errors.
+// Common user related errors.
 var (
 	ErrNoSuchUser = errors.New("No such user")
 )
@@ -24,10 +24,10 @@ var (
 
 // UserRepo interface for getting and storing users in the database.
 type UserRepo interface {
-	Find(id string) (domain.FullUser, error)
+	Find(userID string) (domain.FullUser, error)
 	FindByEmail(email string) (domain.FullUser, error)
 	Save(user domain.FullUser) error
-	Delete(id string) error
+	Delete(userID string) error
 	FindWatchlists(userID string) ([]user.Watchlist, error)
 }
 
@@ -47,9 +47,9 @@ const findUserByIDQuery = `SELECT
 	FROM app_user id = $1`
 
 // Find attempts to find a user by ID.
-func (ur *pgUserRepo) Find(id string) (domain.FullUser, error) {
+func (ur *pgUserRepo) Find(userID string) (domain.FullUser, error) {
 	var u domain.FullUser
-	err := ur.db.QueryRow(findUserByIDQuery, id).Scan(
+	err := ur.db.QueryRow(findUserByIDQuery, userID).Scan(
 		&u.User.ID, &u.User.Email, &u.Credentials.Password,
 		&u.Credentials.Salt, &u.User.CreatedAt)
 
@@ -111,8 +111,8 @@ const deleteUserQuery = `
 	WHERE id = $1`
 
 // Save upserts a user in the database.
-func (ur *pgUserRepo) Delete(id string) error {
-	res, err := ur.db.Exec(deleteUserQuery, id)
+func (ur *pgUserRepo) Delete(userID string) error {
+	res, err := ur.db.Exec(deleteUserQuery, userID)
 	if err != nil {
 		return err
 	}
