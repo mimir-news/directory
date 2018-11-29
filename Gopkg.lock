@@ -95,7 +95,7 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:12e24005ba7e0740a1f410481844a91ed4ce628278009be216c5c9afcdc476a3"
+  digest = "1:1878b960cb1d66a088b86bd3c5db1e1bae07d8b29667cbf8acbaaa4a3001b5d1"
   name = "github.com/mimir-news/pkg"
   packages = [
     "dbutil",
@@ -106,7 +106,7 @@
     "schema/user",
   ]
   pruneopts = "UT"
-  revision = "ee5d04fbc94f14bb99c4be8f61704265916f25e7"
+  revision = "d0eabe084a29a0531bd73a3064022ca6a7f7f5a2"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
@@ -228,6 +228,7 @@
     "github.com/mimir-news/pkg/httputil",
     "github.com/mimir-news/pkg/httputil/auth",
     "github.com/mimir-news/pkg/id",
+    "github.com/mimir-news/pkg/schema/stock",
     "github.com/mimir-news/pkg/schema/user",
     "github.com/stretchr/testify/assert",
   ]

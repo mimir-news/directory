@@ -9,6 +9,7 @@ import (
 // Common watchlist related errors.
 var (
 	ErrNoSuchWatchlist = errors.New("No such watchlist")
+	ErrWatchlistExist  = errors.New("Watchlist already exists")
 )
 
 // WatchlistRepo interface for getting and storing watchlists in a database.

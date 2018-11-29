@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/mimir-news/pkg/id"
-
 	"github.com/mimir-news/pkg/schema/user"
 )
 
