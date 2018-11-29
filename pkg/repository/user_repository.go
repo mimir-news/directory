@@ -221,3 +221,54 @@ func extractWatchlistMembers(rows *sql.Rows) ([]watchlistMember, error) {
 
 	return members, nil
 }
+
+// MockUserRepo mock implementation of UserRepo.
+type MockUserRepo struct {
+	FindUser domain.FullUser
+	FindErr  error
+	FindArg  string
+
+	FindByEmailUser domain.FullUser
+	FindByEmailErr  error
+	FindByEmailArg  string
+
+	SaveErr error
+	SaveArg domain.FullUser
+
+	DeleteErr error
+	DeleteArg string
+
+	FindWatchlistsRes []user.Watchlist
+	FindWatchlistsErr error
+	FindWatchlistsArg string
+}
+
+// Find mock implementation of finding a user by id.
+func (ur *MockUserRepo) Find(id string) (domain.FullUser, error) {
+	ur.FindArg = id
+	return ur.FindUser, ur.FindErr
+}
+
+// FindByEmail mock implementation of finding a user by email.
+func (ur *MockUserRepo) FindByEmail(email string) (domain.FullUser, error) {
+	ur.FindByEmailArg = email
+	return ur.FindByEmailUser, ur.FindByEmailErr
+}
+
+// Save mock implementation of saving a user.
+func (ur *MockUserRepo) Save(user domain.FullUser) error {
+	ur.SaveArg = user
+	return ur.SaveErr
+}
+
+// Delete mock implementation of deleting a user.
+func (ur *MockUserRepo) Delete(id string) error {
+	ur.DeleteArg = id
+	return ur.DeleteErr
+}
+
+// FindWatchlists mock implementation of finding watchlists by user id.
+func (ur *MockUserRepo) FindWatchlists(userID string) ([]user.Watchlist, error) {
+	ur.FindWatchlistsArg = userID
+	return ur.FindWatchlistsRes, ur.FindWatchlistsErr
+}

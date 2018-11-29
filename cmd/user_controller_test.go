@@ -18,8 +18,8 @@ func TestUserCreation(t *testing.T) {
 	assert := assert.New(t)
 
 	conf := getTestConfig()
-	userRepo := &mockUserRepo{
-		findByEmailErr: repository.ErrNoSuchUser,
+	userRepo := &repository.MockUserRepo{
+		FindByEmailErr: repository.ErrNoSuchUser,
 	}
 	mockEnv := getTestEnv(conf, userRepo, nil)
 
@@ -45,13 +45,13 @@ func TestUserCreation(t *testing.T) {
 	assert.Equal(expectedUser.Email, u.Email)
 	assert.Equal(expectedUser.Watchlists, u.Watchlists)
 	assert.True(u.CreatedAt.After(expectedUser.CreatedAt))
-	assert.Equal(credentials.Email, userRepo.saveArg.User.Email)
-	assert.NotEqual("", userRepo.saveArg.Credentials.Password)
-	assert.NotEqual(credentials.Password, userRepo.saveArg.Credentials.Password)
+	assert.Equal(credentials.Email, userRepo.SaveArg.User.Email)
+	assert.NotEqual("", userRepo.SaveArg.Credentials.Password)
+	assert.NotEqual(credentials.Password, userRepo.SaveArg.Credentials.Password)
 
-	userRepo = &mockUserRepo{
-		findByEmailUser: domain.FullUser{User: u},
-		findByEmailErr:  nil,
+	userRepo = &repository.MockUserRepo{
+		FindByEmailUser: domain.FullUser{User: u},
+		FindByEmailErr:  nil,
 	}
 	mockEnv = getTestEnv(conf, userRepo, nil)
 	server = newServer(mockEnv, conf)
@@ -83,8 +83,8 @@ func TestHandleLogin(t *testing.T) {
 	}
 
 	conf := getTestConfig()
-	userRepo := &mockUserRepo{
-		findByEmailUser: expectedUser,
+	userRepo := &repository.MockUserRepo{
+		FindByEmailUser: expectedUser,
 	}
 	sessionRepo := &repository.MockSessionRepo{}
 	mockEnv := getTestEnv(conf, userRepo, sessionRepo)
@@ -127,8 +127,8 @@ func TestHandleGetUser(t *testing.T) {
 	}
 
 	conf := getTestConfig()
-	userRepo := &mockUserRepo{
-		findUser: expectedUser,
+	userRepo := &repository.MockUserRepo{
+		FindUser: expectedUser,
 	}
 	mockEnv := getTestEnv(conf, userRepo, nil)
 	signer := getTestSigner(conf)
@@ -145,33 +145,33 @@ func TestHandleGetUser(t *testing.T) {
 	err = json.NewDecoder(res.Body).Decode(&user)
 	assert.NoError(err)
 	assert.Equal(expectedUser.User.ID, user.ID)
-	assert.Equal(expectedUser.User.ID, userRepo.findArg)
+	assert.Equal(expectedUser.User.ID, userRepo.FindArg)
 
 	// Setup: Missing token.
-	userRepo.findArg = ""
+	userRepo.FindArg = ""
 	req = createTestGetRequest(clientID, "", "/v1/users/"+userID)
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusUnauthorized, res.Code)
-	assert.Equal("", userRepo.findArg)
+	assert.Equal("", userRepo.FindArg)
 
 	// Setup: Missmatching user ids.
-	userRepo.findArg = ""
+	userRepo.FindArg = ""
 	req = createTestGetRequest(clientID, authToken, "/v1/users/wrong-user-id")
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusForbidden, res.Code)
-	assert.Equal("", userRepo.findArg)
+	assert.Equal("", userRepo.FindArg)
 
 	// Setup: No user found.
-	userRepo.findUser = domain.FullUser{}
-	userRepo.findErr = repository.ErrNoSuchUser
-	userRepo.findArg = ""
+	userRepo.FindUser = domain.FullUser{}
+	userRepo.FindErr = repository.ErrNoSuchUser
+	userRepo.FindArg = ""
 	req = createTestGetRequest(clientID, authToken, "/v1/users/"+userID)
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusNotFound, res.Code)
-	assert.Equal(userID, userRepo.findArg)
+	assert.Equal(userID, userRepo.FindArg)
 
 }
 
@@ -182,7 +182,7 @@ func TestHandleDeleteUser(t *testing.T) {
 	clientID := id.New()
 
 	conf := getTestConfig()
-	userRepo := &mockUserRepo{}
+	userRepo := &repository.MockUserRepo{}
 	mockEnv := getTestEnv(conf, userRepo, nil)
 	signer := getTestSigner(conf)
 	authToken, err := signer.New(id.New(), userID, clientID)
@@ -194,32 +194,32 @@ func TestHandleDeleteUser(t *testing.T) {
 	res := performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusOK, res.Code)
-	assert.Equal(userID, userRepo.deleteArg)
+	assert.Equal(userID, userRepo.DeleteArg)
 
 	// Setup: Missing token.
-	userRepo.deleteArg = ""
+	userRepo.DeleteArg = ""
 	req = createTestDeleteRequest(clientID, "", "/v1/users/"+userID)
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusUnauthorized, res.Code)
-	assert.Equal("", userRepo.deleteArg)
+	assert.Equal("", userRepo.DeleteArg)
 
 	// Setup: Missmatching user ids.
-	userRepo.findArg = ""
+	userRepo.FindArg = ""
 	req = createTestDeleteRequest(clientID, authToken, "/v1/users/wrong-user-id")
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusForbidden, res.Code)
-	assert.Equal("", userRepo.findArg)
+	assert.Equal("", userRepo.FindArg)
 
 	// Setup: No user found.
-	userRepo.deleteErr = repository.ErrNoSuchUser
-	userRepo.deleteArg = ""
+	userRepo.DeleteErr = repository.ErrNoSuchUser
+	userRepo.DeleteArg = ""
 	req = createTestDeleteRequest(clientID, authToken, "/v1/users/"+userID)
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusNotFound, res.Code)
-	assert.Equal(userID, userRepo.deleteArg)
+	assert.Equal(userID, userRepo.DeleteArg)
 
 }
 
@@ -244,8 +244,8 @@ func TestHandlePasswordChange(t *testing.T) {
 	}
 
 	conf := getTestConfig()
-	userRepo := &mockUserRepo{
-		findByEmailUser: expectedUser,
+	userRepo := &repository.MockUserRepo{
+		FindByEmailUser: expectedUser,
 	}
 	mockEnv := getTestEnv(conf, userRepo, nil)
 	signer := getTestSigner(conf)
@@ -267,7 +267,7 @@ func TestHandlePasswordChange(t *testing.T) {
 	res := performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusOK, res.Code)
-	savedUser := userRepo.saveArg
+	savedUser := userRepo.SaveArg
 	assert.Equal(userID, savedUser.User.ID)
 	assert.NotEqual(expectedUser.Credentials.Password, savedUser.Credentials.Password)
 	assert.NotEqual("", savedUser.Credentials.Password)
@@ -275,21 +275,21 @@ func TestHandlePasswordChange(t *testing.T) {
 	assert.NotEqual("", savedUser.Credentials.Salt)
 
 	// Setup: Change password wrong user id.
-	userRepo.saveArg = domain.FullUser{}
+	userRepo.SaveArg = domain.FullUser{}
 	req = createTestPutRequest(clientID, authToken, "/v1/users/wrong-id/password", pwdChange)
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusForbidden, res.Code)
-	savedUser = userRepo.saveArg
+	savedUser = userRepo.SaveArg
 	assert.Equal("", savedUser.User.ID)
 
 	// Setup: Change password no change provided.
-	userRepo.saveArg = domain.FullUser{}
+	userRepo.SaveArg = domain.FullUser{}
 	req = createTestPutRequest(clientID, authToken, "/v1/users/"+userID+"/password", user.PasswordChange{})
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusBadRequest, res.Code)
-	savedUser = userRepo.saveArg
+	savedUser = userRepo.SaveArg
 	assert.Equal("", savedUser.User.ID)
 
 }
@@ -312,8 +312,8 @@ func TestHandleEmailChange(t *testing.T) {
 	}
 
 	conf := getTestConfig()
-	userRepo := &mockUserRepo{
-		findUser: expectedUser,
+	userRepo := &repository.MockUserRepo{
+		FindUser: expectedUser,
 	}
 	mockEnv := getTestEnv(conf, userRepo, nil)
 	signer := getTestSigner(conf)
@@ -331,20 +331,20 @@ func TestHandleEmailChange(t *testing.T) {
 	res := performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusOK, res.Code)
-	savedUser := userRepo.saveArg
+	savedUser := userRepo.SaveArg
 	assert.Equal(u.Email, savedUser.User.Email)
 	assert.Equal(u.Email, savedUser.Credentials.Email)
 	assert.Equal(userID, savedUser.User.ID)
-	assert.Equal(userID, userRepo.findArg)
+	assert.Equal(userID, userRepo.FindArg)
 
 	// Setup: Change password no email provided.
-	userRepo.saveArg = domain.FullUser{}
-	userRepo.findArg = ""
+	userRepo.SaveArg = domain.FullUser{}
+	userRepo.FindArg = ""
 	req = createTestPutRequest(clientID, authToken, "/v1/users/"+userID+"/email", user.User{})
 	res = performTestRequest(server.Handler, req)
 	// Test
 	assert.Equal(http.StatusBadRequest, res.Code)
-	assert.Equal("", userRepo.saveArg.User.ID)
-	assert.Equal("", userRepo.findArg)
+	assert.Equal("", userRepo.SaveArg.User.ID)
+	assert.Equal("", userRepo.FindArg)
 
 }

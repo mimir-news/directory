@@ -10,12 +10,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/directory/pkg/service"
 	"github.com/mimir-news/pkg/httputil"
 	"github.com/mimir-news/pkg/httputil/auth"
-	"github.com/mimir-news/pkg/schema/user"
 )
 
 var (
@@ -103,49 +101,4 @@ func getTestConfig() config {
 
 func testHandler(c *gin.Context) {
 	httputil.SendOK(c)
-}
-
-type mockUserRepo struct {
-	findUser domain.FullUser
-	findErr  error
-	findArg  string
-
-	findByEmailUser domain.FullUser
-	findByEmailErr  error
-	findByEmailArg  string
-
-	saveErr error
-	saveArg domain.FullUser
-
-	deleteErr error
-	deleteArg string
-
-	findWatchlistsRes []user.Watchlist
-	findWatchlistsErr error
-	findWatchlistsArg string
-}
-
-func (ur *mockUserRepo) Find(id string) (domain.FullUser, error) {
-	ur.findArg = id
-	return ur.findUser, ur.findErr
-}
-
-func (ur *mockUserRepo) FindByEmail(email string) (domain.FullUser, error) {
-	ur.findByEmailArg = email
-	return ur.findByEmailUser, ur.findByEmailErr
-}
-
-func (ur *mockUserRepo) Save(user domain.FullUser) error {
-	ur.saveArg = user
-	return ur.saveErr
-}
-
-func (ur *mockUserRepo) Delete(id string) error {
-	ur.deleteArg = id
-	return ur.deleteErr
-}
-
-func (r *mockUserRepo) FindWatchlists(userID string) ([]user.Watchlist, error) {
-	r.findWatchlistsArg = userID
-	return r.findWatchlistsRes, r.findWatchlistsErr
 }
