@@ -4,11 +4,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mimir-news/pkg/httputil"
-
-	"github.com/mimir-news/directory/pkg/service"
-
 	"github.com/mimir-news/directory/pkg/repository"
+	"github.com/mimir-news/directory/pkg/service"
+	"github.com/mimir-news/pkg/httputil"
 	"github.com/mimir-news/pkg/id"
 	"github.com/mimir-news/pkg/schema/user"
 	"github.com/stretchr/testify/assert"
@@ -37,8 +35,7 @@ func TestGetWatchlist(t *testing.T) {
 	assert.Equal(userID, listRepo.GetArgUserID)
 	assert.Equal(listID, listRepo.GetArgWatchlistID)
 
-	listRepo.GetArgUserID = ""
-	listRepo.GetArgWatchlistID = ""
+	listRepo.UnsetArgs()
 	listRepo.GetErr = repository.ErrNoSuchWatchlist
 
 	l, err = listSvc.Get(userID, listID)
@@ -63,8 +60,7 @@ func TestCreateWatchlist(t *testing.T) {
 
 	var lastListID string
 	for i := 0; i < 3; i++ {
-		listRepo.SaveArgUserID = ""
-		listRepo.SaveArgWatchlist = user.Watchlist{}
+		listRepo.UnsetArgs()
 
 		err := listSvc.Create(userID, listName)
 		assert.NoError(err)
@@ -96,12 +92,9 @@ func TestAddStockToWatchlist(t *testing.T) {
 	listSvc := service.NewWatchlistService(listRepo)
 
 	for _, symbol := range symbols {
+		listRepo.UnsetArgs()
 
-		listRepo.AddStockArgUserID = ""
-		listRepo.AddStockArgWatchlistID = ""
-		listRepo.AddStockArgSymbol = ""
-
-		err := listSvc.AddStock(userID, symbol, listID)
+		err := listSvc.AddStock(userID, listID, symbol)
 		assert.NoError(err)
 		assert.Equal(userID, listRepo.AddStockArgUserID)
 		assert.Equal(listID, listRepo.AddStockArgWatchlistID)
@@ -110,14 +103,14 @@ func TestAddStockToWatchlist(t *testing.T) {
 	}
 
 	listRepo.AddStockErr = repository.ErrNoSuchWatchlist
-	err := listSvc.AddStock(userID, "S0", listID)
+	err := listSvc.AddStock(userID, listID, "S0")
 	assert.Error(err)
 	httpErr, ok := err.(*httputil.Error)
 	assert.True(ok)
 	assert.Equal(http.StatusNotFound, httpErr.StatusCode)
 
 	listRepo.AddStockErr = repository.ErrNoSuchUser
-	err = listSvc.AddStock(userID, "S0", listID)
+	err = listSvc.AddStock(userID, listID, "S0")
 	assert.Error(err)
 	httpErr, ok = err.(*httputil.Error)
 	assert.True(ok)
@@ -135,12 +128,9 @@ func TestDeleteStockFromWatchlist(t *testing.T) {
 	listSvc := service.NewWatchlistService(listRepo)
 
 	for _, symbol := range symbols {
+		listRepo.UnsetArgs()
 
-		listRepo.DeleteStockArgUserID = ""
-		listRepo.DeleteStockArgWatchlistID = ""
-		listRepo.DeleteStockArgSymbol = ""
-
-		err := listSvc.DeleteStock(userID, symbol, listID)
+		err := listSvc.DeleteStock(userID, listID, symbol)
 		assert.NoError(err)
 		assert.Equal(userID, listRepo.DeleteStockArgUserID)
 		assert.Equal(listID, listRepo.DeleteStockArgWatchlistID)
@@ -149,14 +139,14 @@ func TestDeleteStockFromWatchlist(t *testing.T) {
 	}
 
 	listRepo.DeleteStockErr = repository.ErrNoSuchWatchlist
-	err := listSvc.DeleteStock(userID, "S0", listID)
+	err := listSvc.DeleteStock(userID, listID, "S0")
 	assert.Error(err)
 	httpErr, ok := err.(*httputil.Error)
 	assert.True(ok)
 	assert.Equal(http.StatusNotFound, httpErr.StatusCode)
 
 	listRepo.DeleteStockErr = repository.ErrNoSuchUser
-	err = listSvc.DeleteStock(userID, "S0", listID)
+	err = listSvc.DeleteStock(userID, listID, "S0")
 	assert.Error(err)
 	httpErr, ok = err.(*httputil.Error)
 	assert.True(ok)
@@ -190,4 +180,23 @@ func TestDeleteWatchlist(t *testing.T) {
 	httpErr, ok = err.(*httputil.Error)
 	assert.True(ok)
 	assert.Equal(http.StatusNotFound, httpErr.StatusCode)
+}
+
+func TestRenameWatchlist(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	listID := id.New()
+	newName := "new-list-name"
+
+	listRepo := &repository.MockWatchlistRepo{}
+	listSvc := service.NewWatchlistService(listRepo)
+
+	err := listSvc.Rename(userID, listID, newName)
+	assert.NoError(err)
+
+	savedList := listRepo.SaveArgWatchlist
+	assert.Equal(userID, listRepo.SaveArgUserID)
+	assert.Equal(listID, savedList.ID)
+	assert.Equal(newName, savedList.Name)
 }

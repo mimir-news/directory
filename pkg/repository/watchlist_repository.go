@@ -12,6 +12,10 @@ var (
 	ErrWatchlistExist  = errors.New("Watchlist already exists")
 )
 
+var (
+	emptyWatchlist = user.Watchlist{}
+)
+
 // WatchlistRepo interface for getting and storing watchlists in a database.
 type WatchlistRepo interface {
 	Get(userID, watchlistID string) (user.Watchlist, error)
@@ -45,6 +49,26 @@ type MockWatchlistRepo struct {
 	DeleteErr            error
 	DeleteArgUserID      string
 	DeleteArgWatchlistID string
+}
+
+// UnsetArgs unsets all recorded arguments.
+func (wr *MockWatchlistRepo) UnsetArgs() {
+	wr.GetArgUserID = ""
+	wr.GetArgWatchlistID = ""
+
+	wr.SaveArgUserID = ""
+	wr.SaveArgWatchlist = emptyWatchlist
+
+	wr.AddStockArgUserID = ""
+	wr.AddStockArgSymbol = ""
+	wr.AddStockArgWatchlistID = ""
+
+	wr.DeleteStockArgUserID = ""
+	wr.DeleteStockArgSymbol = ""
+	wr.DeleteStockArgWatchlistID = ""
+
+	wr.DeleteArgUserID = ""
+	wr.DeleteArgWatchlistID = ""
 }
 
 // Get mock implemntation of Get.

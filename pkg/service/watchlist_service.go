@@ -16,8 +16,9 @@ var (
 type WatchlistService interface {
 	Get(userID, watchlistID string) (user.Watchlist, error)
 	Create(userID, listName string) error
-	AddStock(userID, symbol, watchlistID string) error
-	DeleteStock(userID, symbol, watchlistID string) error
+	Rename(userID, watchlistID, newName string) error
+	AddStock(userID, watchlistID, symbol string) error
+	DeleteStock(userID, watchlistID, symbol string) error
 	Delete(userID, watchlistID string) error
 }
 
@@ -46,21 +47,21 @@ func (ws *watchlistSvc) Get(userID, watchlistID string) (user.Watchlist, error) 
 // Create creates and saves a new watchlist.
 func (ws *watchlistSvc) Create(userID, listName string) error {
 	newList := user.NewWatchlist(listName)
+	return ws.saveList(userID, newList)
+}
 
-	err := ws.listRepo.Save(userID, newList)
-	if err == repository.ErrNoSuchUser {
-		return httputil.NewError(err.Error(), http.StatusNotFound)
+// Create creates and saves a new watchlist.
+func (ws *watchlistSvc) Rename(userID, watchlistID, newName string) error {
+	renamedList := user.Watchlist{
+		ID:   watchlistID,
+		Name: newName,
 	}
 
-	if err == repository.ErrWatchlistExist {
-		return httputil.NewError(err.Error(), http.StatusConflict)
-	}
-
-	return err
+	return ws.saveList(userID, renamedList)
 }
 
 // AddStock adds a stock to a watchlist.
-func (ws *watchlistSvc) AddStock(userID, symbol, watchlistID string) error {
+func (ws *watchlistSvc) AddStock(userID, watchlistID, symbol string) error {
 	err := ws.listRepo.AddStock(userID, symbol, watchlistID)
 	if err == repository.ErrNoSuchWatchlist || err == repository.ErrNoSuchUser {
 		return httputil.NewError(err.Error(), http.StatusNotFound)
@@ -70,7 +71,7 @@ func (ws *watchlistSvc) AddStock(userID, symbol, watchlistID string) error {
 }
 
 // DeleteStock removes a stock form a watchlist.
-func (ws *watchlistSvc) DeleteStock(userID, symbol, watchlistID string) error {
+func (ws *watchlistSvc) DeleteStock(userID, watchlistID, symbol string) error {
 	err := ws.listRepo.DeleteStock(userID, symbol, watchlistID)
 	if err == repository.ErrNoSuchWatchlist || err == repository.ErrNoSuchUser {
 		return httputil.NewError(err.Error(), http.StatusNotFound)
@@ -84,6 +85,19 @@ func (ws *watchlistSvc) Delete(userID, watchlistID string) error {
 	err := ws.listRepo.Delete(userID, watchlistID)
 	if err == repository.ErrNoSuchWatchlist || err == repository.ErrNoSuchUser {
 		return httputil.NewError(err.Error(), http.StatusNotFound)
+	}
+
+	return err
+}
+
+func (ws *watchlistSvc) saveList(userID string, watchlist user.Watchlist) error {
+	err := ws.listRepo.Save(userID, watchlist)
+	if err == repository.ErrNoSuchUser {
+		return httputil.NewError(err.Error(), http.StatusNotFound)
+	}
+
+	if err == repository.ErrWatchlistExist {
+		return httputil.NewError(err.Error(), http.StatusConflict)
 	}
 
 	return err

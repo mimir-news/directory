@@ -37,7 +37,7 @@ func newServer(e *env, conf config) *http.Server {
 
 	// Secured watchlist routes
 	r.POST("/v1/watchlists/:name", e.handleCreateWatchlist)
-	r.DELETE("/v1/watchlists/:watchlistId", e.handleCreateWatchlist)
+	r.DELETE("/v1/watchlists/:watchlistId", e.handleDeleteWatchlist)
 	r.GET("/v1/watchlists/:watchlistId", e.handleGetWatchlist)
 	r.PUT("/v1/watchlists/:watchlistId/name/:name", e.handleRenameWatchlist)
 	r.PUT("/v1/watchlists/:watchlistId/stock/:symbol", e.handleAddStockToWatchlist)

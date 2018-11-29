@@ -21,7 +21,7 @@ func TestUserCreation(t *testing.T) {
 	userRepo := &repository.MockUserRepo{
 		FindByEmailErr: repository.ErrNoSuchUser,
 	}
-	mockEnv := getTestEnv(conf, userRepo, nil)
+	mockEnv := getTestEnv(conf, userRepo, nil, nil)
 
 	credentials := user.Credentials{
 		Email:    "mail@mail.com",
@@ -53,7 +53,7 @@ func TestUserCreation(t *testing.T) {
 		FindByEmailUser: domain.FullUser{User: u},
 		FindByEmailErr:  nil,
 	}
-	mockEnv = getTestEnv(conf, userRepo, nil)
+	mockEnv = getTestEnv(conf, userRepo, nil, nil)
 	server = newServer(mockEnv, conf)
 
 	req = createTestPostRequest("client-id", "", "/v1/users", credentials)
@@ -77,8 +77,8 @@ func TestHandleLogin(t *testing.T) {
 		},
 		Credentials: domain.StoredCredentials{
 			Email:    credentials.Email,
-			Password: "S5UeZOWCDkIfP/5LUDpyhIY0l6+aow+CmkBEVtHqpebhe04vb6kDbPaD/wo05fs6x1lvJfI/6YZ66zbQ8X2lHaEThp4f1Zl0exk7j/wow740KbWZHf9DSA==", // Hashed and encrypted password.
-			Salt:     "3MQEKd3NVnU+WQFQxo8JpYWrTrqXOiwro4MwLwnsckWXinE=",                                                                         // Encrypted salt
+			Password: encryptedPassword,
+			Salt:     encryptedSalt,
 		},
 	}
 
@@ -87,7 +87,7 @@ func TestHandleLogin(t *testing.T) {
 		FindByEmailUser: expectedUser,
 	}
 	sessionRepo := &repository.MockSessionRepo{}
-	mockEnv := getTestEnv(conf, userRepo, sessionRepo)
+	mockEnv := getTestEnv(conf, userRepo, sessionRepo, nil)
 	server := newServer(mockEnv, conf)
 
 	req := createTestPostRequest("client-id", "", "/v1/login", credentials)
@@ -130,10 +130,8 @@ func TestHandleGetUser(t *testing.T) {
 	userRepo := &repository.MockUserRepo{
 		FindUser: expectedUser,
 	}
-	mockEnv := getTestEnv(conf, userRepo, nil)
-	signer := getTestSigner(conf)
-	authToken, err := signer.New(id.New(), userID, clientID)
-	assert.NoError(err)
+	mockEnv := getTestEnv(conf, userRepo, nil, nil)
+	authToken := getTestToken(conf, userID, clientID)
 
 	// Setup: Get user happy path.
 	server := newServer(mockEnv, conf)
@@ -142,7 +140,7 @@ func TestHandleGetUser(t *testing.T) {
 	// Test
 	assert.Equal(http.StatusOK, res.Code)
 	var user user.User
-	err = json.NewDecoder(res.Body).Decode(&user)
+	err := json.NewDecoder(res.Body).Decode(&user)
 	assert.NoError(err)
 	assert.Equal(expectedUser.User.ID, user.ID)
 	assert.Equal(expectedUser.User.ID, userRepo.FindArg)
@@ -183,7 +181,7 @@ func TestHandleDeleteUser(t *testing.T) {
 
 	conf := getTestConfig()
 	userRepo := &repository.MockUserRepo{}
-	mockEnv := getTestEnv(conf, userRepo, nil)
+	mockEnv := getTestEnv(conf, userRepo, nil, nil)
 	signer := getTestSigner(conf)
 	authToken, err := signer.New(id.New(), userID, clientID)
 	assert.NoError(err)
@@ -238,8 +236,8 @@ func TestHandlePasswordChange(t *testing.T) {
 		},
 		Credentials: domain.StoredCredentials{
 			Email:    userEmail,
-			Password: "S5UeZOWCDkIfP/5LUDpyhIY0l6+aow+CmkBEVtHqpebhe04vb6kDbPaD/wo05fs6x1lvJfI/6YZ66zbQ8X2lHaEThp4f1Zl0exk7j/wow740KbWZHf9DSA==", // Hashed and encrypted password.
-			Salt:     "3MQEKd3NVnU+WQFQxo8JpYWrTrqXOiwro4MwLwnsckWXinE=",                                                                         // Encrypted salt
+			Password: encryptedPassword,
+			Salt:     encryptedSalt,
 		},
 	}
 
@@ -247,17 +245,15 @@ func TestHandlePasswordChange(t *testing.T) {
 	userRepo := &repository.MockUserRepo{
 		FindByEmailUser: expectedUser,
 	}
-	mockEnv := getTestEnv(conf, userRepo, nil)
-	signer := getTestSigner(conf)
-	authToken, err := signer.New(id.New(), userID, clientID)
-	assert.NoError(err)
+	mockEnv := getTestEnv(conf, userRepo, nil, nil)
+	authToken := getTestToken(conf, userID, clientID)
 
 	pwdChange := user.PasswordChange{
 		New:      "new-password",
 		Repeated: "new-password",
 		Old: user.Credentials{
 			Email:    userEmail,
-			Password: "super-secret-password",
+			Password: correctPassword,
 		},
 	}
 
@@ -315,10 +311,8 @@ func TestHandleEmailChange(t *testing.T) {
 	userRepo := &repository.MockUserRepo{
 		FindUser: expectedUser,
 	}
-	mockEnv := getTestEnv(conf, userRepo, nil)
-	signer := getTestSigner(conf)
-	authToken, err := signer.New(id.New(), userID, clientID)
-	assert.NoError(err)
+	mockEnv := getTestEnv(conf, userRepo, nil, nil)
+	authToken := getTestToken(conf, userID, clientID)
 
 	u := user.User{
 		ID:    userID,
