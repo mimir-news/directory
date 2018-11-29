@@ -12,9 +12,10 @@ import (
 )
 
 type env struct {
-	passwordSvc *service.PasswordService
-	userSvc     service.UserService
-	db          *sql.DB
+	passwordSvc  *service.PasswordService
+	watchlistSvc service.WatchlistService
+	userSvc      service.UserService
+	db           *sql.DB
 }
 
 func setupEnv(conf config) *env {
@@ -33,11 +34,13 @@ func setupEnv(conf config) *env {
 		conf.TokenSecret, conf.TokenVerificationKey, 24*time.Hour)
 
 	userService := service.NewUserService(passwordSvc, signer, userRepo, sessionRepo)
+	watchlistSvc := service.NewWatchlistService(nil)
 
 	return &env{
-		passwordSvc: passwordSvc,
-		userSvc:     userService,
-		db:          db,
+		passwordSvc:  passwordSvc,
+		watchlistSvc: watchlistSvc,
+		userSvc:      userService,
+		db:           db,
 	}
 }
 

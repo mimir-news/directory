@@ -12,6 +12,7 @@ import (
 func main() {
 	conf := config{}
 	e := setupEnv(conf)
+	defer e.close()
 	server := newServer(e, conf)
 
 	log.Printf("Starting %s on port: %s\n", ServiceName, conf.Port)
