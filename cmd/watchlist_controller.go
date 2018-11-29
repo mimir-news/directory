@@ -75,11 +75,37 @@ func (e *env) handleRenameWatchlist(c *gin.Context) {
 }
 
 func (e *env) handleAddStockToWatchlist(c *gin.Context) {
-	c.Error(errNotImplemented)
+	newStockSymbol := c.Param("symbol")
+	userID, listID, err := getUserAndWatchlistID(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	err = e.watchlistSvc.AddStock(userID, listID, newStockSymbol)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	httputil.SendOK(c)
 }
 
 func (e *env) handleDeleteStockFromWatchlist(c *gin.Context) {
-	c.Error(errNotImplemented)
+	stockSymbol := c.Param("symbol")
+	userID, listID, err := getUserAndWatchlistID(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	err = e.watchlistSvc.DeleteStock(userID, listID, stockSymbol)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	httputil.SendOK(c)
 }
 
 func getUserAndWatchlistID(c *gin.Context) (string, string, error) {

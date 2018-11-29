@@ -131,3 +131,49 @@ func TestHandleRenameWatchlist(t *testing.T) {
 	assert.Equal(userID, listRepo.SaveArgUserID)
 	assert.Equal(newName, listRepo.SaveArgWatchlist.Name)
 }
+
+func TestHandleAddStockToWatchlist(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	listID := id.New()
+	clientID := id.New()
+	newStockSymbol := "SNEW"
+
+	listRepo := &repository.MockWatchlistRepo{}
+
+	conf := getTestConfig()
+	e := getTestEnv(conf, nil, nil, listRepo)
+	authToken := getTestToken(conf, userID, clientID)
+	server := newServer(e, conf)
+
+	req := createTestPutRequest(clientID, authToken, "/v1/watchlists/"+listID+"/stock/"+newStockSymbol, nil)
+	res := performTestRequest(server.Handler, req)
+	assert.Equal(http.StatusOK, res.Code)
+	assert.Equal(userID, listRepo.AddStockArgUserID)
+	assert.Equal(listID, listRepo.AddStockArgWatchlistID)
+	assert.Equal(newStockSymbol, listRepo.AddStockArgSymbol)
+}
+
+func TestHandleDeleteStockFromWatchlist(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	listID := id.New()
+	clientID := id.New()
+	stockSymbol := "SOLD"
+
+	listRepo := &repository.MockWatchlistRepo{}
+
+	conf := getTestConfig()
+	e := getTestEnv(conf, nil, nil, listRepo)
+	authToken := getTestToken(conf, userID, clientID)
+	server := newServer(e, conf)
+
+	req := createTestDeleteRequest(clientID, authToken, "/v1/watchlists/"+listID+"/stock/"+stockSymbol)
+	res := performTestRequest(server.Handler, req)
+	assert.Equal(http.StatusOK, res.Code)
+	assert.Equal(userID, listRepo.DeleteStockArgUserID)
+	assert.Equal(listID, listRepo.DeleteStockArgWatchlistID)
+	assert.Equal(stockSymbol, listRepo.DeleteStockArgSymbol)
+}
