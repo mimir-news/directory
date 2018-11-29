@@ -86,7 +86,7 @@ func TestHandleLogin(t *testing.T) {
 	userRepo := &mockUserRepo{
 		findByEmailUser: expectedUser,
 	}
-	sessionRepo := &mockSessionRepo{}
+	sessionRepo := &repository.MockSessionRepo{}
 	mockEnv := getTestEnv(conf, userRepo, sessionRepo)
 	server := newServer(mockEnv, conf)
 
@@ -101,17 +101,17 @@ func TestHandleLogin(t *testing.T) {
 	authToken, err := verifier.Verify("client-id", token.Token)
 	assert.NoError(err)
 	assert.Equal(expectedUser.User.ID, authToken.Body.Subject)
-	assert.Equal(expectedUser.User.ID, sessionRepo.saveArg.UserID)
+	assert.Equal(expectedUser.User.ID, sessionRepo.SaveArg.UserID)
 
 	wrongCredentials := user.Credentials{
 		Email:    "mail@mail.com",
 		Password: "super-wrong-password",
 	}
-	sessionRepo.saveArg = domain.Session{}
+	sessionRepo.SaveArg = domain.Session{}
 	req = createTestPostRequest("client-id", "", "/v1/login", wrongCredentials)
 	res = performTestRequest(server.Handler, req)
 	assert.Equal(http.StatusUnauthorized, res.Code)
-	assert.Equal("", sessionRepo.saveArg.UserID)
+	assert.Equal("", sessionRepo.SaveArg.UserID)
 }
 
 func TestHandleGetUser(t *testing.T) {

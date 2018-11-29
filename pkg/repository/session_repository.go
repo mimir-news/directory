@@ -38,3 +38,15 @@ func (sr *pgSessionRepo) Save(session domain.Session) error {
 
 	return dbutil.AssertRowsAffected(res, 1, dbutil.ErrFailedInsert)
 }
+
+// MockSessionRepo mock implementation of SessionRepo.
+type MockSessionRepo struct {
+	SaveErr error
+	SaveArg domain.Session
+}
+
+// Save mock implementation of Saving a session.
+func (sr *MockSessionRepo) Save(session domain.Session) error {
+	sr.SaveArg = session
+	return sr.SaveErr
+}

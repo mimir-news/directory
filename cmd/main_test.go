@@ -149,13 +149,3 @@ func (r *mockUserRepo) FindWatchlists(userID string) ([]user.Watchlist, error) {
 	r.findWatchlistsArg = userID
 	return r.findWatchlistsRes, r.findWatchlistsErr
 }
-
-type mockSessionRepo struct {
-	saveErr error
-	saveArg domain.Session
-}
-
-func (sr *mockSessionRepo) Save(session domain.Session) error {
-	sr.saveArg = session
-	return sr.saveErr
-}
