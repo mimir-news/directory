@@ -27,6 +27,7 @@ func setupEnv(conf config) *env {
 
 	userRepo := repository.NewUserRepo(db)
 	sessionRepo := repository.NewSessionRepo(db)
+	watchlsitRepo := repository.NewWatchlistRepo(db)
 
 	passwordSvc := service.NewPasswordService(
 		userRepo, conf.PasswordPepper, conf.PasswordEncryptionKey)
@@ -34,7 +35,7 @@ func setupEnv(conf config) *env {
 		conf.TokenSecret, conf.TokenVerificationKey, 24*time.Hour)
 
 	userService := service.NewUserService(passwordSvc, signer, userRepo, sessionRepo)
-	watchlistSvc := service.NewWatchlistService(nil)
+	watchlistSvc := service.NewWatchlistService(watchlsitRepo)
 
 	return &env{
 		passwordSvc:  passwordSvc,
