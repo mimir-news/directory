@@ -24,7 +24,7 @@ var unsecuredRoutes = []string{
 
 type config struct {
 	DB                    dbutil.Config `env:"DB"`
-	Port                  string        `env:"PORT"`
+	Port                  string        `env:"SERVICE_PORT"`
 	PasswordPepper        string
 	PasswordEncryptionKey string
 	TokenSecret           string

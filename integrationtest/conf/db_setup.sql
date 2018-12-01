@@ -1,0 +1,3 @@
+CREATE DATABASE directory;
+CREATE ROLE directory WITH LOGIN PASSWORD 'password';
+GRANT ALL PRIVILEGES ON DATABASE directory TO directory;
