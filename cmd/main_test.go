@@ -109,11 +109,7 @@ func getTestConfig() config {
 		TokenSecret:           "my-secret",
 		TokenVerificationKey:  "my-verification-key",
 		Port:                  "8080",
-		UnsecuredRoutes: []string{
-			"/health",
-			"/v1/users",
-			"/v1/login",
-		},
+		UnsecuredRoutes:       unsecuredRoutes,
 	}
 }
 

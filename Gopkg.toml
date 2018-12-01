@@ -36,3 +36,7 @@
 [[constraint]]
   revision = "bd24025048264251af81303d37bf5830fcdb283c"
   name = "github.com/mimir-news/pkg"
+
+[[constraint]]
+  name = "github.com/caarlos0/env"
+  version = "3.5.0"

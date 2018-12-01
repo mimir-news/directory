@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	conf := config{}
+	conf := getConfig()
 	e := setupEnv(conf)
 	defer e.close()
 	server := newServer(e, conf)
