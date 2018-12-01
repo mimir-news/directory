@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  digest = "1:a571648c5f1a3f20fa405d1cf924b941c5bb236ea6d0565a63c0994e38dd8f82"
-  name = "github.com/caarlos0/env"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "518fcfb943252f77846f92ce5794086d9cb4a1b5"
-  version = "v3.5.0"
-
-[[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
@@ -39,28 +31,36 @@
   version = "v1.3.0"
 
 [[projects]]
-  digest = "1:ba4a13c1846fc9df263e43e61854e2ce530eadfdc10a7ea394cc3b76b42ddaed"
+  digest = "1:07829a6a0523929f5edc92b2a2dbb05ef3f335780bac9f06c44aa27c6cfc467a"
   name = "github.com/gobuffalo/envy"
   packages = ["."]
   pruneopts = "UT"
-  revision = "b29bf6b8134f3398b9333ba1893c58620152edb0"
-  version = "v1.6.9"
+  revision = "7e7ddcbb431d1d9e32121d7eeee8d68bdecd7081"
+  version = "v1.6.10"
 
 [[projects]]
   branch = "master"
-  digest = "1:b73defe35e1810e7b7960c9515a99063c004751c11eb80432c987fb983cb7de4"
+  digest = "1:a5b87cc8e6e9d842be6bcf371991b47ca2a15ca2b763f620518ab37d841a78c6"
   name = "github.com/gobuffalo/packd"
   packages = ["."]
   pruneopts = "UT"
-  revision = "f25c5d2471d797647acdd6179365a5c4a88cf534"
+  revision = "311c6248e5fbdcd13b3ce364f00073506d8154e6"
 
 [[projects]]
-  digest = "1:6f92eb0109fc0b899e1b3ee5b27cfe77b3a09e096e83fa5551f52abd26ba628d"
+  digest = "1:05f90e1f4ad8f5ba56e4367b70183410fb6584390e06ed7dc79be3500ca54600"
   name = "github.com/gobuffalo/packr"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7c2dcc2885cf30cb864d25bb1a5f50e0f5c99acd"
-  version = "v1.21.3"
+  revision = "ba3c3ae9169fdc7b283f00a4b4c39346e444871c"
+  version = "v1.21.5"
+
+[[projects]]
+  branch = "master"
+  digest = "1:da425896866b704cec05178819d7f31c7d5dad4d705403607b971b326bc7fea3"
+  name = "github.com/gobuffalo/syncx"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "558ac7de985fc4f4057bff27c7bdf99e92fe0750"
 
 [[projects]]
   digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
@@ -114,7 +114,7 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:a6b4cc3674ba210195c631a11b81960ae2cbe0f35e0901b9628a0121a29ced24"
+  digest = "1:934d3c531d0d633a8f5d95309c87f3b1ec6e93e9479a1d39d0e8ed793611f034"
   name = "github.com/mimir-news/pkg"
   packages = [
     "dbutil",
@@ -125,7 +125,7 @@
     "schema/user",
   ]
   pruneopts = "UT"
-  revision = "bd24025048264251af81303d37bf5830fcdb283c"
+  revision = "a828a34c204d784067c982b6271fbfa8455ab4dc"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
@@ -157,6 +157,18 @@
   packages = ["difflib"]
   pruneopts = "UT"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
+  digest = "1:efafa5160b1666d27e6e1ad4cd3fba27ce73aaaa1e99c3d02e14e55690a8878d"
+  name = "github.com/rogpeppe/go-internal"
+  packages = [
+    "modfile",
+    "module",
+    "semver",
+  ]
+  pruneopts = "UT"
+  revision = "d87f08a7d80821c797ffc8eb8f4e01675f378736"
   version = "v1.0.0"
 
 [[projects]]
@@ -204,15 +216,15 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "3d3f9f413869b949e48070b5bc593aa22cc2b8f2"
+  revision = "eb0de9b17e854e9b1ccd9963efafc79862359959"
 
 [[projects]]
   branch = "master"
-  digest = "1:44010c69a8af2745fcdc6b4c57b126b4dd3de5cb01b6a5ba97a1781a24df0886"
+  digest = "1:8775d8a768d9e65e8b659172804aac5db1fc8d563ba766470a6c2698c57c61a7"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "ec83556a53fe16b65c452a104ea9d1e86a671852"
+  revision = "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
 
 [[projects]]
   digest = "1:cbc72c4c4886a918d6ab4b95e347ffe259846260f99ebdd8a198c2331cf2b2e9"
@@ -231,18 +243,17 @@
   version = "v1.7.2"
 
 [[projects]]
-  digest = "1:342378ac4dcb378a5448dd723f0784ae519383532f5e70ade24132c4c8693202"
+  digest = "1:4d2e5a73dc1500038e504a8d78b986630e3626dc027bc030ba5c75da257cdb96"
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
-  version = "v2.2.1"
+  revision = "51d6538a90f86fe93ac480b35f37b2be17fef232"
+  version = "v2.2.2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/caarlos0/env",
     "github.com/gin-gonic/gin",
     "github.com/lib/pq",
     "github.com/mimir-news/pkg/dbutil",

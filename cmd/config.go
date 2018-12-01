@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
-	envConf "github.com/caarlos0/env"
 	"github.com/mimir-news/pkg/dbutil"
 )
 
@@ -23,8 +24,8 @@ var unsecuredRoutes = []string{
 }
 
 type config struct {
-	DB                    dbutil.Config `env:"DB"`
-	Port                  string        `env:"SERVICE_PORT"`
+	DB                    dbutil.Config
+	Port                  string
 	PasswordPepper        string
 	PasswordEncryptionKey string
 	TokenSecret           string
@@ -32,23 +33,28 @@ type config struct {
 	UnsecuredRoutes       []string
 }
 
-func getConfig() config {
-	var conf config
-	err := envConf.Parse(&conf)
-	if err != nil {
-		log.Fatal(err)
-	}
+func (c config) String() string {
+	dsn := c.DB.PgDSN()
+	routes := strings.Join(c.UnsecuredRoutes, ", ")
+	return fmt.Sprintf(
+		"config(db=[%s] port=%s pepper=%s encryptionKey=%s secret=%s tokenKey=%s routes=[%s])",
+		dsn, c.Port, c.PasswordPepper, c.PasswordEncryptionKey,
+		c.TokenSecret, c.TokenVerificationKey, routes)
+}
 
+func getConfig() config {
 	passwordSecret := getSecret(mustGetenv("PASSWORD_SECRETS_FILE"))
 	tokenSecret := getSecret(mustGetenv("TOKEN_SECRETS_FILE"))
 
-	conf.PasswordPepper = passwordSecret.Secret
-	conf.PasswordEncryptionKey = passwordSecret.Key
-	conf.TokenSecret = tokenSecret.Secret
-	conf.TokenVerificationKey = tokenSecret.Key
-	conf.UnsecuredRoutes = unsecuredRoutes
-
-	return conf
+	return config{
+		DB:                    dbutil.MustGetConfig("DB"),
+		Port:                  mustGetenv("SERVICE_PORT"),
+		PasswordPepper:        passwordSecret.Secret,
+		PasswordEncryptionKey: passwordSecret.Key,
+		TokenSecret:           tokenSecret.Secret,
+		TokenVerificationKey:  tokenSecret.Key,
+		UnsecuredRoutes:       unsecuredRoutes,
+	}
 }
 
 type secret struct {

@@ -34,15 +34,17 @@ PASSWORD_SECRETS_FILE='/etc/mimir/directory/password_secrets.json'
 TOKEN_SECRETS_FILE='/etc/mimir/directory/token_secrets.json'
 
 echo "Starting service: $SVC_CONTAINER_NAME"
-docker run -d --name $SVC_CONTAINER_NAME \
+docker run --rm -t --name $SVC_CONTAINER_NAME \
     --network mimir-net -p $SVC_PORT:$SVC_PORT \
     -e PASSWORD_SECRETS_FILE=$PASSWORD_SECRETS_FILE \
     -e TOKEN_SECRETS_FILE=$TOKEN_SECRETS_FILE \
     -e SERVICE_PORT=$SVC_PORT \
-    -e DB_HOST=$DB_NAME\
+    -e DB_HOST=$DB_NAME \
     -e DB_DATABASE=$SVC_NAME \
     -e DB_USERNAME=$SVC_NAME \
     -e DB_PASSWORD='password' \
     -v "$PWD/conf/password_secrets.json":$PASSWORD_SECRETS_FILE:ro \
     -v "$PWD/conf/token_secrets.json":$TOKEN_SECRETS_FILE:ro \
     $SVC_IMAGE
+
+docker stop $DB_NAME

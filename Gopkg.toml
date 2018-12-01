@@ -34,12 +34,8 @@
   version = "1.2.2"
 
 [[constraint]]
-  revision = "bd24025048264251af81303d37bf5830fcdb283c"
+  revision = "a828a34c204d784067c982b6271fbfa8455ab4dc"
   name = "github.com/mimir-news/pkg"
-
-[[constraint]]
-  name = "github.com/caarlos0/env"
-  version = "3.5.0"
 
 [[constraint]]
   name = "github.com/lib/pq"
