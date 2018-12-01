@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/mimir-news/pkg/httputil/auth"
-
 	"github.com/gin-gonic/gin"
 	"github.com/mimir-news/pkg/httputil"
+	"github.com/mimir-news/pkg/httputil/auth"
 	"github.com/mimir-news/pkg/schema/user"
 )
 

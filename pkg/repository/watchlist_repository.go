@@ -71,7 +71,7 @@ const saveWatchlistQuery = `
 	INSERT INTO watchlist(id, name, user_id, created_at) 
 	VALUES ($1, $2, $3, $4)
 	ON CONFLICT ON CONSTRAINT watchlist_name_user_id_key
-	UPDATE name = $2`
+	DO UPDATE SET name = $2`
 
 // Save saves a watchlist.
 func (wr *pgWatchlistRepo) Save(userID string, wl user.Watchlist) error {

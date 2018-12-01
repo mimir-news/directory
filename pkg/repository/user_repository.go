@@ -63,7 +63,7 @@ func (ur *pgUserRepo) Find(userID string) (domain.FullUser, error) {
 
 const findUserByEmailQuery = `SELECT 
 	id, email, password, salt, created_at
-	FROM app_user email = $1`
+	FROM app_user WHERE email = $1`
 
 // FindByEmail attempts to find a user by email.
 func (ur *pgUserRepo) FindByEmail(email string) (domain.FullUser, error) {
@@ -84,11 +84,8 @@ const saveUserQuery = `
 	INSERT INTO 
 	app_user(id, email, password, salt, created_at)
 	VALUES ($1, $2, $3, $4, $5)
-	ON CONFLICT UPDATE
-		email = $2, 
-		password = $3,
-		salt = $4
-		`
+	ON CONFLICT ON CONSTRAINT app_user_pkey 
+	DO UPDATE SET email = $2, password = $3, salt = $4`
 
 // Save upserts a user in the database.
 func (ur *pgUserRepo) Save(user domain.FullUser) error {
@@ -106,7 +103,7 @@ const deleteUserQuery = `
 	UPDATE app_user SET
 		email = NULL, 
 		password = NULL,
-		salt = NULL
+		salt = NULL,
 		locked = TRUE
 	WHERE id = $1`
 

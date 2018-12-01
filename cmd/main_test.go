@@ -9,13 +9,12 @@ import (
 	"net/http/httptest"
 	"time"
 
-	"github.com/mimir-news/pkg/id"
-
 	"github.com/gin-gonic/gin"
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/directory/pkg/service"
 	"github.com/mimir-news/pkg/httputil"
 	"github.com/mimir-news/pkg/httputil/auth"
+	"github.com/mimir-news/pkg/id"
 )
 
 var (

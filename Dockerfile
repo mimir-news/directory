@@ -12,7 +12,9 @@ WORKDIR /go/src/directory/cmd
 RUN go build
 
 FROM alpine:3.8 as run
-WORKDIR /opt/app
 RUN mkdir /etc/mimir /etc/mimir/directory
+
+WORKDIR /opt/app
 COPY --from=build /go/src/directory/cmd/cmd directory
+COPY cmd/migrations .
 CMD ["./directory"]

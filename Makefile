@@ -8,6 +8,9 @@ test:
 build:
 	docker build -t $(IMAGE) .
 
+delete:
+	docker rmi $(IMAGE)
+
 build-test:
 	docker build -t "$(NAME)-test:$(VERSION)" -f Dockerfile.test .
 

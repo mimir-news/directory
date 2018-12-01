@@ -31,52 +31,12 @@
   version = "v1.3.0"
 
 [[projects]]
-  digest = "1:07829a6a0523929f5edc92b2a2dbb05ef3f335780bac9f06c44aa27c6cfc467a"
-  name = "github.com/gobuffalo/envy"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "7e7ddcbb431d1d9e32121d7eeee8d68bdecd7081"
-  version = "v1.6.10"
-
-[[projects]]
-  branch = "master"
-  digest = "1:a5b87cc8e6e9d842be6bcf371991b47ca2a15ca2b763f620518ab37d841a78c6"
-  name = "github.com/gobuffalo/packd"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "311c6248e5fbdcd13b3ce364f00073506d8154e6"
-
-[[projects]]
-  digest = "1:05f90e1f4ad8f5ba56e4367b70183410fb6584390e06ed7dc79be3500ca54600"
-  name = "github.com/gobuffalo/packr"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "ba3c3ae9169fdc7b283f00a4b4c39346e444871c"
-  version = "v1.21.5"
-
-[[projects]]
-  branch = "master"
-  digest = "1:da425896866b704cec05178819d7f31c7d5dad4d705403607b971b326bc7fea3"
-  name = "github.com/gobuffalo/syncx"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "558ac7de985fc4f4057bff27c7bdf99e92fe0750"
-
-[[projects]]
   digest = "1:97df918963298c287643883209a2c3f642e6593379f97ab400c2a2e219ab647d"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   pruneopts = "UT"
   revision = "aa810b61a9c79d51363740d207bb46cf8e620ed5"
   version = "v1.2.0"
-
-[[projects]]
-  digest = "1:ecd9aa82687cf31d1585d4ac61d0ba180e42e8a6182b85bd785fcca8dfeefc1b"
-  name = "github.com/joho/godotenv"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "23d116af351c84513e1946b527c88823e476be13"
-  version = "v1.3.0"
 
 [[projects]]
   digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
@@ -98,14 +58,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:598aa4555d1ea05a7b949e31e7db0e7b2df21f8772c53cc42f6543dc6bf9a35a"
-  name = "github.com/markbates/oncer"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "05fccaae8fc423476d98fd4c3e4699ba0fbbde48"
-
-[[projects]]
   digest = "1:0981502f9816113c9c8c4ac301583841855c8cf4da8c72f696b3ebedf6d0e4e5"
   name = "github.com/mattn/go-isatty"
   packages = ["."]
@@ -114,7 +66,7 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:934d3c531d0d633a8f5d95309c87f3b1ec6e93e9479a1d39d0e8ed793611f034"
+  digest = "1:9b172b06c1cb510a6fea13efba734fc4266b249f62f0b83a87a55e0063abc5f4"
   name = "github.com/mimir-news/pkg"
   packages = [
     "dbutil",
@@ -125,7 +77,7 @@
     "schema/user",
   ]
   pruneopts = "UT"
-  revision = "a828a34c204d784067c982b6271fbfa8455ab4dc"
+  revision = "6d1fc373af0fd1ab3f338d0d1c835d9e72d84cca"
 
 [[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
@@ -144,31 +96,11 @@
   version = "1.0.1"
 
 [[projects]]
-  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
-  name = "github.com/pkg/errors"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
-
-[[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
   name = "github.com/pmezard/go-difflib"
   packages = ["difflib"]
   pruneopts = "UT"
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
-  version = "v1.0.0"
-
-[[projects]]
-  digest = "1:efafa5160b1666d27e6e1ad4cd3fba27ce73aaaa1e99c3d02e14e55690a8878d"
-  name = "github.com/rogpeppe/go-internal"
-  packages = [
-    "modfile",
-    "module",
-    "semver",
-  ]
-  pruneopts = "UT"
-  revision = "d87f08a7d80821c797ffc8eb8f4e01675f378736"
   version = "v1.0.0"
 
 [[projects]]

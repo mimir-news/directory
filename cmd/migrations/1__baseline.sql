@@ -5,14 +5,14 @@ CREATE TABLE app_user (
   password VARCHAR(255),
   salt VARCHAR(255),
   locked BOOLEAN DEFAULT FALSE,
-  created_at DATETIME,
+  created_at TIMESTAMP,
   UNIQUE(email)
 );
 
 CREATE TABLE session (
   id VARCHAR(50) PRIMARY KEY,
   user_id VARCHAR(50) REFERENCES app_user(id),
-  created_at DATETIME
+  created_at TIMESTAMP
 );
 
 CREATE TABLE one_time_credential (
@@ -20,28 +20,28 @@ CREATE TABLE one_time_credential (
   key VARCHAR(255),
   user_id VARCHAR(50) REFERENCES app_user(id),
   has_been_used BOOLEAN DEFAULT FALSE,
-  created_at DATETIME,
-  valid_to DATETIME
+  created_at TIMESTAMP,
+  valid_to TIMESTAMP
 );
 
 CREATE TABLE stock (
   symbol VARCHAR(50) PRIMARY KEY,
   name VARCHAR(100),
-  created_at DATETIME
+  created_at TIMESTAMP
 );
 
 CREATE TABLE watchlist (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100),
     user_id VARCHAR(50) REFERENCES app_user(id),
-    created_at DATETIME,
-    UNIQUE(name, user_id) watchlist_name_user_id_key
+    created_at TIMESTAMP,
+    UNIQUE(name, user_id)
 );
 
 CREATE TABLE watchlist_member (
   symbol VARCHAR(50) REFERENCES stock(symbol),
   watchlist_id VARCHAR(50) REFERENCES watchlist(id),
-  created_at DATETIME,
+  created_at TIMESTAMP,
   PRIMARY KEY (symbol, watchlist_id)
 );
 

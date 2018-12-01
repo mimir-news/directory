@@ -10,3 +10,7 @@
 
 vendor
 cmd/cmd
+integrationtest/__pycache__
+integrationtest/directory*
+integrationtest/migrations
+.vscode
