@@ -20,6 +20,7 @@ def _assert_status(resp, test_case):
     if resp.status_code != expected_status:
         test_name = test_case["name"]
         print(f"FAILED: {test_name} expected={expected_status} got={actual_status}\n")
+        sys.exit(1)
 
 
 def _describe_test(test_no, test_case):
@@ -28,7 +29,7 @@ def _describe_test(test_no, test_case):
 
 
 def _update_env(resp, test_case, env):
-    updates = test_case["setEnv"]
+    updates = test_case["setEnv"] if "setEnv" in test_case else []
     if not updates:
         return
     body = resp.json()

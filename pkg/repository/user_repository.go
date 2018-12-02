@@ -44,7 +44,7 @@ type pgUserRepo struct {
 
 const findUserByIDQuery = `SELECT 
 	id, email, password, salt, created_at
-	FROM app_user id = $1`
+	FROM app_user WHERE id = $1`
 
 // Find attempts to find a user by ID.
 func (ur *pgUserRepo) Find(userID string) (domain.FullUser, error) {

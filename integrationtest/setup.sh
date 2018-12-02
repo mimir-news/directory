@@ -40,6 +40,7 @@ echo 'Database ready'
 
 cp ../cmd/cmd $SVC_CONTAINER_NAME
 cp -R ../cmd/migrations migrations
+cp ./conf/2__test_data.sql ./migrations/2__test_data.sql
 SVC_PORT='52711' #$(sh ./conf/random_port.sh)
 
 export PASSWORD_SECRETS_FILE="$PWD/conf/password_secrets.json"

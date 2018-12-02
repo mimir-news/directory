@@ -4,7 +4,7 @@ import sys
 
 
 def read_test_case_content():
-    with open("test-cases.json", "r") as f:
+    with open("./conf/test_cases.json", "r") as f:
         return json.load(f)
 
 
