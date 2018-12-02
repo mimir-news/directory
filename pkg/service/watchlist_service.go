@@ -15,7 +15,7 @@ var (
 // WatchlistService service responsible for handling watchlists
 type WatchlistService interface {
 	Get(userID, watchlistID string) (user.Watchlist, error)
-	Create(userID, listName string) error
+	Create(userID, listName string) (user.Watchlist, error)
 	Rename(userID, watchlistID, newName string) error
 	AddStock(userID, watchlistID, symbol string) error
 	DeleteStock(userID, watchlistID, symbol string) error
@@ -45,9 +45,14 @@ func (ws *watchlistSvc) Get(userID, watchlistID string) (user.Watchlist, error) 
 }
 
 // Create creates and saves a new watchlist.
-func (ws *watchlistSvc) Create(userID, listName string) error {
+func (ws *watchlistSvc) Create(userID, listName string) (user.Watchlist, error) {
 	newList := user.NewWatchlist(listName)
-	return ws.saveList(userID, newList)
+	err := ws.saveList(userID, newList)
+	if err != nil {
+		return emptyWatchlist, err
+	}
+
+	return newList, err
 }
 
 // Create creates and saves a new watchlist.

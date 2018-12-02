@@ -14,7 +14,7 @@ import (
 // Service metadata.
 const (
 	ServiceName    = "directory"
-	ServiceVersion = "0.1"
+	ServiceVersion = "0.3"
 )
 
 var unsecuredRoutes = []string{

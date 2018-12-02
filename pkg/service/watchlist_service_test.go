@@ -62,19 +62,18 @@ func TestCreateWatchlist(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		listRepo.UnsetArgs()
 
-		err := listSvc.Create(userID, listName)
+		list, err := listSvc.Create(userID, listName)
 		assert.NoError(err)
 
-		savedListID := listRepo.SaveArgWatchlist.ID
 		assert.Equal(userID, listRepo.SaveArgUserID)
-		assert.NotEqual(lastListID, savedListID)
+		assert.NotEqual(lastListID, list.ID)
 		assert.NotEqual("", listRepo.SaveArgWatchlist.ID)
 
-		lastListID = savedListID
+		lastListID = list.ID
 	}
 
 	listRepo.SaveErr = repository.ErrNoSuchUser
-	err := listSvc.Create(userID, listName)
+	_, err := listSvc.Create(userID, listName)
 	assert.Error(err)
 	httpErr, ok := err.(*httputil.Error)
 	assert.True(ok)

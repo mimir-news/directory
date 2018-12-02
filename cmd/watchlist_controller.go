@@ -16,13 +16,13 @@ func (e *env) handleCreateWatchlist(c *gin.Context) {
 		return
 	}
 
-	err = e.watchlistSvc.Create(userID, listName)
+	watchlist, err := e.watchlistSvc.Create(userID, listName)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	httputil.SendOK(c)
+	c.JSON(http.StatusOK, watchlist)
 }
 
 func (e *env) handleDeleteWatchlist(c *gin.Context) {

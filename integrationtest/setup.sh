@@ -16,18 +16,16 @@ DB_IMAGE='postgres:11.1-alpine'
 DB_CONTAINER_NAME="directory-db-$SHORT_COMMIT"
 EXTERNAL_DB_PORT=$(sh ./conf/random_port.sh)
 
-echo "Building svc"
-cd ../cmd
-go build
-cd ../integrationtest
-
 # Database setup
 echo "Starting database: $DB_CONTAINER_NAME"
 docker run -d --rm --name $DB_CONTAINER_NAME --net mimir-net \
    -p $EXTERNAL_DB_PORT:5432 -e POSTGRES_PASSWORD=password $DB_IMAGE
 
-echo 'Sleeping for 2 seconds to allow database to startup'
-sleep 2
+echo "Building svc"
+cd ../cmd
+go build
+cd ../integrationtest
+sleep 1
 
 echo 'Setup up database and user'
 docker exec -i $DB_CONTAINER_NAME psql -U postgres < conf/db_setup.sql

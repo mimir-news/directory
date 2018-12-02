@@ -190,7 +190,7 @@
             }
         },
         {
-            "name": "create-new-watchlist",
+            "name": "create-watchlist",
             "positive": true,
             "request": {
                 "method": "POST",
@@ -199,10 +199,40 @@
             },
             "response": {
                 "status": 200
+            },
+            "setEnv": [
+                {
+                    "envKey": "watchlistId",
+                    "responseKey": "id"
+                }
+            ]
+        },
+        {
+            "name": "get-created-watchlist",
+            "positive": true,
+            "request": {
+                "method": "GET",
+                "path": "/v1/watchlists/${watchlistId}",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
             }
         },
         {
-            "name": "create-another-new-watchlist",
+            "name": "delete-created-watchlist",
+            "positive": true,
+            "request": {
+                "method": "DELETE",
+                "path": "/v1/watchlists/${watchlistId}",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
+            }
+        },
+        {
+            "name": "create-new-watchlist",
             "positive": true,
             "request": {
                 "method": "POST",
@@ -211,6 +241,132 @@
             },
             "response": {
                 "status": 200
+            },
+            "setEnv": [
+                {
+                    "envKey": "watchlistId",
+                    "responseKey": "id"
+                }
+            ]
+        },
+        {
+            "name": "create-duplicate-watchlist",
+            "positive": false,
+            "request": {
+                "method": "POST",
+                "path": "/v1/watchlists/watchlist",
+                "withToken": true
+            },
+            "response": {
+                "status": 500
+            }
+        },
+        {
+            "name": "get-new-watchlist",
+            "positive": true,
+            "request": {
+                "method": "GET",
+                "path": "/v1/watchlists/${watchlistId}",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
+            }
+        },
+        {
+            "name": "change-watchlist-name",
+            "positive": true,
+            "request": {
+                "method": "PUT",
+                "path": "/v1/watchlists/${watchlistId}/name/portfolio",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
+            }
+        },
+        {
+            "name": "add-AAPL-to-watchlist",
+            "positive": true,
+            "request": {
+                "method": "PUT",
+                "path": "/v1/watchlists/${watchlistId}/stock/AAPL",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
+            }
+        },
+        {
+            "name": "add-WRONG-to-watchlist",
+            "positive": false,
+            "request": {
+                "method": "PUT",
+                "path": "/v1/watchlists/${watchlistId}/stock/WRONG",
+                "withToken": true
+            },
+            "response": {
+                "status": 500
+            }
+        },
+        {
+            "name": "add-GOOG-to-watchlist",
+            "positive": true,
+            "request": {
+                "method": "PUT",
+                "path": "/v1/watchlists/${watchlistId}/stock/GOOG",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
+            }
+        },
+        {
+            "name": "add-AMZN-to-watchlist",
+            "positive": true,
+            "request": {
+                "method": "PUT",
+                "path": "/v1/watchlists/${watchlistId}/stock/AMZN",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
+            }
+        },
+        {
+            "name": "delete-GOOG-from-watchlist",
+            "positive": true,
+            "request": {
+                "method": "DELETE",
+                "path": "/v1/watchlists/${watchlistId}/stock/GOOG",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
+            }
+        },
+        {
+            "name": "delete-watchlist-with-members",
+            "positive": true,
+            "request": {
+                "method": "DELETE",
+                "path": "/v1/watchlists/${watchlistId}",
+                "withToken": true
+            },
+            "response": {
+                "status": 200
+            }
+        },
+        {
+            "name": "delete-missing-watchlist",
+            "positive": false,
+            "request": {
+                "method": "DELETE",
+                "path": "/v1/watchlists/${watchlistId}",
+                "withToken": true
+            },
+            "response": {
+                "status": 404
             }
         },
         {
@@ -223,6 +379,22 @@
             },
             "response": {
                 "status": 200
+            }
+        },
+        {
+            "name": "login-to-deleted-user",
+            "positive": false,
+            "request": {
+                "method": "POST",
+                "path": "/v1/login",
+                "body": {
+                    "email": "my-new@email.com",
+                    "password": "my-new-password"
+                },
+                "withToken": false
+            },
+            "response": {
+                "status": 401
             }
         }
     ]

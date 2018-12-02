@@ -44,8 +44,8 @@ type pgWatchlistRepo struct {
 const getWatchlistQuery = `
 	SELECT w.id, w.name, w.created_at, s.symbol, s.name 
 	FROM watchlist w 
-	INNER JOIN watchlist_member m ON m.watchlist_id = w.id
-	INNER JOIN stock s ON s.symbol = m.symbol
+	LEFT JOIN watchlist_member m ON m.watchlist_id = w.id
+	LEFT JOIN stock s ON s.symbol = m.symbol
 	WHERE w.user_id = $1 
 	AND w.id = $2 
 	ORDER BY m.created_at`
@@ -53,9 +53,7 @@ const getWatchlistQuery = `
 // Get gets a watchlist of stocks.
 func (wr *pgWatchlistRepo) Get(userID, watchlistID string) (user.Watchlist, error) {
 	rows, err := wr.db.Query(getWatchlistQuery, userID, watchlistID)
-	if err == sql.ErrNoRows {
-		return emptyWatchlist, ErrNoSuchWatchlist
-	} else if err != nil {
+	if err != nil {
 		return emptyWatchlist, err
 	}
 
@@ -70,7 +68,7 @@ func (wr *pgWatchlistRepo) Get(userID, watchlistID string) (user.Watchlist, erro
 const saveWatchlistQuery = `
 	INSERT INTO watchlist(id, name, user_id, created_at) 
 	VALUES ($1, $2, $3, $4)
-	ON CONFLICT ON CONSTRAINT watchlist_name_user_id_key
+	ON CONFLICT ON CONSTRAINT watchlist_pkey
 	DO UPDATE SET name = $2`
 
 // Save saves a watchlist.
@@ -117,7 +115,7 @@ func (wr *pgWatchlistRepo) AddStock(userID, symbol, watchlistID string) error {
 }
 
 const deleteStockQuery = `
-	DELETE watchlist_member WHERE symbol = $1 AND watchlist_id = $2`
+	DELETE FROM watchlist_member WHERE symbol = $1 AND watchlist_id = $2`
 
 // DeleteStock deletes a stock from a given users watchlist.
 func (wr *pgWatchlistRepo) DeleteStock(userID, symbol, watchlistID string) error {
@@ -148,7 +146,7 @@ func (wr *pgWatchlistRepo) DeleteStock(userID, symbol, watchlistID string) error
 }
 
 const deleteWatchlistQuery = `
-	DELETE watchlist WHERE id = $1 AND user_id = $2`
+	DELETE FROM watchlist WHERE id = $1 AND user_id = $2`
 
 // Delete deletes a watchlist and all its members.
 func (wr *pgWatchlistRepo) Delete(userID, watchlistID string) error {
@@ -179,7 +177,7 @@ func (wr *pgWatchlistRepo) Delete(userID, watchlistID string) error {
 }
 
 const deleteStocksQuery = `
-	DELETE watchlist_member WHERE watchlist_id = $1`
+	DELETE FROM watchlist_member WHERE watchlist_id = $1`
 
 func deleteStocks(tx *sql.Tx, userID, watchlistID string) error {
 	err := assertUserWatchlist(tx, userID, watchlistID)
@@ -187,7 +185,7 @@ func deleteStocks(tx *sql.Tx, userID, watchlistID string) error {
 		return err
 	}
 
-	_, err = tx.Exec(deleteStockQuery, watchlistID)
+	_, err = tx.Exec(deleteStocksQuery, watchlistID)
 	return err
 }
 
@@ -223,11 +221,14 @@ const asserUserWatchlistQuery = `
 	WHERE w.id = $1 AND w.user_id = $2`
 
 func assertUserWatchlist(q dbutil.Querier, userID, watchlistID string) error {
-	_, err := q.Query(asserUserWatchlistQuery, userID, watchlistID)
+	res, err := q.Query(asserUserWatchlistQuery, userID, watchlistID)
 	if err == sql.ErrNoRows {
 		return ErrNoSuchWatchlist
+	} else if err != nil {
+		return err
 	}
-	return err
+
+	return res.Close()
 }
 
 // MockWatchlistRepo mock implementation for watchlist repo.

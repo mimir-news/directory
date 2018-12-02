@@ -121,15 +121,15 @@ type watchlistMember struct {
 	listID        string
 	listName      string
 	listCreatedAt time.Time
-	stockSymbol   string
-	stockName     string
+	stockSymbol   sql.NullString
+	stockName     sql.NullString
 }
 
 const findUserWatchlistsQuery = `
 	SELECT w.id, w.name, w.created_at, s.symbol, s.name
 	FROM watchlist w 
-	INNER JOIN watchlist_member m ON m.watchlist_id = w.id
-	INNER JOIN stock s ON s.symbol = m.symbol
+	LEFT JOIN watchlist_member m ON m.watchlist_id = w.id
+	LEFT JOIN stock s ON s.symbol = m.symbol
 	WHERE w.user_id = $1
 	ORDER BY w.id, m.created_at`
 
@@ -186,13 +186,16 @@ func mapMembersByListID(members []watchlistMember) map[string][]watchlistMember 
 
 func mapMembersToWatchlist(members []watchlistMember) (user.Watchlist, error) {
 	if len(members) < 1 {
-		return user.Watchlist{}, errors.New("No members in watchlist")
+		return user.Watchlist{}, ErrNoSuchWatchlist
 	}
 	firstMember := members[0]
 
-	stocks := make([]stock.Stock, 0, len(members))
-	for _, member := range members {
-		s := stock.Stock{Symbol: member.stockSymbol, Name: member.stockName}
+	stocks := make([]stock.Stock, 0)
+	for _, m := range members {
+		if !m.stockName.Valid || !m.stockSymbol.Valid {
+			continue
+		}
+		s := stock.Stock{Symbol: m.stockSymbol.String, Name: m.stockName.String}
 		stocks = append(stocks, s)
 	}
 
