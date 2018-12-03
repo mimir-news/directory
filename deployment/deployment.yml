@@ -1,0 +1,72 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: directory
+  labels:
+    app: directory
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: directory
+    spec:
+      containers:
+        - name: directory
+          image: eu.gcr.io/mimir-185212/directory:0.3
+          ports:
+            - name: svc-port
+              containerPort: 8080
+          env:
+            - name: SERVICE_PORT
+              value: "8080"
+            - name: DB_HOST
+              value: mimir-db
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: directory
+            - name: DB_USERNAME
+              value: directory
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: directory.password
+            - name: PASSWORD_SECRETS_FILE
+              values: "/etc/mimir/directory/password_secrets.json"
+            - name: TOKEN_SECRETS_FILE
+              values: "/etc/mimir/token_secrets.json"
+          volumeMounts:
+            - name: password-secrets
+              mountPath: /etc/mimir/directory/password_secrets.json
+              subPath: password_secrets.json
+            - name: token-secrets
+              mountPath: /etc/mimir/token_secrets.json
+              subPath: token_secrets.json
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: svc-port
+            initialDelaySeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: svc-port
+            initialDelaySeconds: 25
+          imagePullPolicy: Always
+      volumes:
+        - name: password-secrets
+          secret:
+            secretName: password-secret
+            items:
+              - key: content
+                path: password_secrets.json
+        - name: token-secrets
+          secret:
+            secretName: token-secret
+            items:
+              - key: content
+                path: token_secrets.json
+      imagePullSecrets:
+        - name: gcr-json-key
