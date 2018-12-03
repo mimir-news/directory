@@ -16,5 +16,5 @@ RUN mkdir /etc/mimir /etc/mimir/directory
 
 WORKDIR /opt/app
 COPY --from=build /go/src/directory/cmd/cmd directory
-COPY cmd/migrations .
+COPY cmd/migrations migrations
 CMD ["./directory"]
