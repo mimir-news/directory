@@ -2,11 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"strings"
 
 	"github.com/mimir-news/pkg/dbutil"
 )
@@ -31,15 +29,6 @@ type config struct {
 	TokenSecret           string
 	TokenVerificationKey  string
 	UnsecuredRoutes       []string
-}
-
-func (c config) String() string {
-	dsn := c.DB.PgDSN()
-	routes := strings.Join(c.UnsecuredRoutes, ", ")
-	return fmt.Sprintf(
-		"config(db=[%s] port=%s pepper=%s encryptionKey=%s secret=%s tokenKey=%s routes=[%s])",
-		dsn, c.Port, c.PasswordPepper, c.PasswordEncryptionKey,
-		c.TokenSecret, c.TokenVerificationKey, routes)
 }
 
 func getConfig() config {
