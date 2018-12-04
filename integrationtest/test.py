@@ -1,20 +1,24 @@
 # Standard library
-from datetime import datetime
 import sys
+from datetime import datetime
+from typing import Dict
+
+# 3rd party modules
+import requests
 
 # Internal modules
-from config import env, TESTS
 import rpc
+from config import env, TESTS
 
 
-def _run_test(test_case, env):
+def _run_test(test_case: Dict, env: Dict) -> None:
     resp = rpc.make_request(test_case["request"], env)
     _assert_status(resp, test_case)
     if test_case["positive"]:
         _update_env(resp, test_case, env)
 
 
-def _assert_status(resp, test_case):
+def _assert_status(resp: requests.Response, test_case: Dict) -> None:
     expected_status = test_case["response"]["status"]
     actual_status = resp.status_code
     if resp.status_code != expected_status:
@@ -23,12 +27,12 @@ def _assert_status(resp, test_case):
         sys.exit(1)
 
 
-def _describe_test(test_no, test_case):
+def _describe_test(test_no: int, test_case: Dict) -> None:
     name = test_case["name"]
     print(f"Test {test_no}: {name}")
 
 
-def _update_env(resp, test_case, env):
+def _update_env(resp: requests.Response, test_case: Dict, env: Dict) -> None:
     updates = test_case["setEnv"] if "setEnv" in test_case else []
     if not updates:
         return
@@ -37,12 +41,12 @@ def _update_env(resp, test_case, env):
         env[update["envKey"]] = body[update["responseKey"]]
 
 
-def _report_elapsed_time(start_time):
+def _report_elapsed_time(start_time: datetime) -> None:
     elapsed_time = (datetime.now() - start_time).microseconds / 1e6
     print(f"Test took: {elapsed_time} s.")
 
 
-def main():
+def main() -> None:
     start_time = datetime.now()
     for i, TEST in enumerate(TESTS):
         _describe_test(i, TEST)

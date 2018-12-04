@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/mimir-news/pkg/dbutil"
 	"github.com/mimir-news/pkg/schema/stock"
 	"github.com/mimir-news/pkg/schema/user"
@@ -12,9 +13,14 @@ import (
 
 // Common watchlist related errors.
 var (
-	ErrNoSuchWatchlist      = errors.New("No such watchlist")
-	ErrWatchlistExist       = errors.New("Watchlist already exists")
-	ErrNoSuchWatchlistStock = errors.New("No such stock in watchlist")
+	ErrNoSuchWatchlist = errors.New("No such watchlist")
+	ErrWatchlistExist  = errors.New("Watchlist already exists")
+	ErrNoSuchStock     = errors.New("No such stock in watchlist")
+)
+
+const (
+	uniqueConstraintErrorCode pq.ErrorCode = "23505"
+	foreignKeyErrorCode       pq.ErrorCode = "23503"
 )
 
 var (
@@ -80,6 +86,11 @@ func (wr *pgWatchlistRepo) Save(userID string, wl user.Watchlist) error {
 
 	_, err = tx.Exec(saveWatchlistQuery, wl.ID, wl.Name, userID, wl.CreatedAt)
 	if err != nil {
+		pgErr, ok := err.(*pq.Error)
+		if ok && pgErr.Code == uniqueConstraintErrorCode {
+			err = ErrWatchlistExist
+		}
+
 		dbutil.RollbackTx(tx)
 		return err
 	}
@@ -136,7 +147,7 @@ func (wr *pgWatchlistRepo) DeleteStock(userID, symbol, watchlistID string) error
 		return err
 	}
 
-	err = dbutil.AssertRowsAffected(res, 1, ErrNoSuchWatchlistStock)
+	err = dbutil.AssertRowsAffected(res, 1, ErrNoSuchStock)
 	if err != nil {
 		dbutil.RollbackTx(tx)
 		return err
@@ -210,6 +221,11 @@ func saveStocks(tx *sql.Tx, userID, watchlistID string, stocks ...stock.Stock) e
 		now := time.Now().UTC()
 		_, err = stmt.Exec(stock.Symbol, watchlistID, now)
 		if err != nil {
+			pgErr, ok := err.(*pq.Error)
+			if ok && pgErr.Code == foreignKeyErrorCode {
+				err = ErrNoSuchStock
+			}
+
 			return err
 		}
 	}

@@ -108,7 +108,7 @@ func TestAddStockToWatchlist(t *testing.T) {
 	assert.True(ok)
 	assert.Equal(http.StatusNotFound, httpErr.StatusCode)
 
-	listRepo.AddStockErr = repository.ErrNoSuchUser
+	listRepo.AddStockErr = repository.ErrNoSuchStock
 	err = listSvc.AddStock(userID, listID, "S0")
 	assert.Error(err)
 	httpErr, ok = err.(*httputil.Error)

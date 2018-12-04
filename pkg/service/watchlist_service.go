@@ -48,7 +48,9 @@ func (ws *watchlistSvc) Get(userID, watchlistID string) (user.Watchlist, error) 
 func (ws *watchlistSvc) Create(userID, listName string) (user.Watchlist, error) {
 	newList := user.NewWatchlist(listName)
 	err := ws.saveList(userID, newList)
-	if err != nil {
+	if err == repository.ErrWatchlistExist {
+		return emptyWatchlist, httputil.NewError(err.Error(), http.StatusConflict)
+	} else if err != nil {
 		return emptyWatchlist, err
 	}
 
@@ -68,7 +70,7 @@ func (ws *watchlistSvc) Rename(userID, watchlistID, newName string) error {
 // AddStock adds a stock to a watchlist.
 func (ws *watchlistSvc) AddStock(userID, watchlistID, symbol string) error {
 	err := ws.listRepo.AddStock(userID, symbol, watchlistID)
-	if err == repository.ErrNoSuchWatchlist || err == repository.ErrNoSuchUser {
+	if err == repository.ErrNoSuchStock || err == repository.ErrNoSuchWatchlist {
 		return httputil.NewError(err.Error(), http.StatusNotFound)
 	}
 

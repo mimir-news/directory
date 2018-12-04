@@ -258,7 +258,7 @@
                 "withToken": true
             },
             "response": {
-                "status": 500
+                "status": 409
             }
         },
         {
@@ -306,7 +306,7 @@
                 "withToken": true
             },
             "response": {
-                "status": 500
+                "status": 404
             }
         },
         {

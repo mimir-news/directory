@@ -10,6 +10,7 @@
 
 vendor
 cmd/cmd
+cmd/start.sh
 integrationtest/__pycache__
 integrationtest/directory*
 integrationtest/migrations

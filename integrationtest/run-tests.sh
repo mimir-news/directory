@@ -16,13 +16,16 @@ echo "Testing $SVC_NAME v: $SVC_VERSION commit: $SHORT_COMMIT. Test ID: $TEST_ID
 echo ""
 sleep 1
 
+NETWORK_NAME="$SVC_NAME-network-$SHORT_COMMIT-$TEST_ID"
+docker network create $NETWORK_NAME
+
 # Database metadata
 DB_IMAGE='postgres:11.1-alpine'
 DB_CONTAINER_NAME="directory-db-$TEST_ID"
 
 # Database setup
 echo "Starting database: $DB_CONTAINER_NAME"
-docker run -d --rm --name $DB_CONTAINER_NAME --net mimir-net \
+docker run -d --rm --name $DB_CONTAINER_NAME --net $NETWORK_NAME \
    -e POSTGRES_PASSWORD=password $DB_IMAGE
 
 echo "Sleeping for 2 seconds to make database ready"
@@ -40,7 +43,7 @@ SVC_PORT=$(sh ./conf/random_port.sh)
 
 echo "Starting service: $SVC_CONTAINER_NAME on port: $SVC_PORT"
 docker run -d --rm --name $SVC_CONTAINER_NAME \
-    --network mimir-net -p $SVC_PORT:8080 \
+    --network $NETWORK_NAME -p $SVC_PORT:8080 \
     -e PASSWORD_SECRETS_FILE=$PASSWORD_SECRETS_FILE \
     -e TOKEN_SECRETS_FILE=$TOKEN_SECRETS_FILE \
     -e SERVICE_PORT=8080 \
@@ -59,3 +62,4 @@ python test.py $SVC_PORT
 # Stopping containers
 docker stop $SVC_CONTAINER_NAME
 docker stop $DB_CONTAINER_NAME
+docker network rm $NETWORK_NAME
