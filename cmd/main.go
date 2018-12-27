@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/mimir-news/pkg/dbutil"
+
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 	"github.com/mimir-news/pkg/httputil"
@@ -60,7 +62,7 @@ func newRouter(e *env, conf config) *gin.Engine {
 }
 
 func (e *env) healthCheck() error {
-	return e.db.Ping()
+	return dbutil.IsConnected(e.db)
 }
 
 func placeholderHandler(c *gin.Context) {
