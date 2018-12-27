@@ -1,0 +1,15 @@
+{
+    "name": "Login to deleted user",
+    "request": {
+        "method": "POST",
+        "path": "/v1/login",
+        "body": {
+            "email": "my-new@email.com",
+            "password": "my-new-password"
+        },
+        "useToken": false
+    },
+    "response": {
+        "status": 401
+    }
+}

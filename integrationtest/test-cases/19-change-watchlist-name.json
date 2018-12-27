@@ -1,0 +1,11 @@
+{
+    "name": "Change watchlist name",
+    "request": {
+        "method": "PUT",
+        "path": "/v1/watchlists/${watchlistId}/name/portfolio",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

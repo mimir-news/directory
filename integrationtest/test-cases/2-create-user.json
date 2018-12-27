@@ -1,0 +1,21 @@
+{
+    "name": "Create user",
+    "request": {
+        "method": "POST",
+        "path": "/v1/users",
+        "body": {
+            "email": "my@email.com",
+            "password": "my-secret-password"
+        },
+        "useToken": false
+    },
+    "response": {
+        "status": 200
+    },
+    "setEnv": [
+        {
+            "envKey": "userId",
+            "responseKey": "id"
+        }
+    ]
+}

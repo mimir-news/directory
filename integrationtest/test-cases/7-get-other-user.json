@@ -1,0 +1,11 @@
+{
+    "name": "Get other user",
+    "request": {
+        "method": "GET",
+        "path": "/v1/users/3d9b4cff-d0f7-4030-b4dd-15e270fa1c39",
+        "useToken": true
+    },
+    "response": {
+        "status": 403
+    }
+}

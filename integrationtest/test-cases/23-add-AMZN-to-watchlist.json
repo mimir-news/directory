@@ -1,0 +1,11 @@
+{
+    "name": "Add AMZN to watchlist",
+    "request": {
+        "method": "PUT",
+        "path": "/v1/watchlists/${watchlistId}/stock/AMZN",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

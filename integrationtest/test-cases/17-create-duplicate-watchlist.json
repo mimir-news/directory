@@ -1,0 +1,11 @@
+{
+    "name": "Create duplicate watchlist",
+    "request": {
+        "method": "POST",
+        "path": "/v1/watchlists/watchlist",
+        "useToken": true
+    },
+    "response": {
+        "status": 409
+    }
+}

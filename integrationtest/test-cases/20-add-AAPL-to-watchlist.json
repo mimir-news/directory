@@ -1,0 +1,11 @@
+{
+    "name": "Add AAPL to watchlist",
+    "request": {
+        "method": "PUT",
+        "path": "/v1/watchlists/${watchlistId}/stock/AAPL",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "Delete GOOG from watchlist",
+    "request": {
+        "method": "DELETE",
+        "path": "/v1/watchlists/${watchlistId}/stock/GOOG",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

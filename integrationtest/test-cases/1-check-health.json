@@ -1,0 +1,11 @@
+{
+    "name": "Check service health",
+    "request": {
+        "method": "GET",
+        "path": "/health",
+        "useToken": false
+    },
+    "response": {
+        "status": 200
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "Add WRONG to watchlist",
+    "request": {
+        "method": "PUT",
+        "path": "/v1/watchlists/${watchlistId}/stock/WRONG",
+        "useToken": true
+    },
+    "response": {
+        "status": 404
+    }
+}

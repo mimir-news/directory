@@ -1,0 +1,11 @@
+{
+    "name": "Delete created user",
+    "request": {
+        "method": "DELETE",
+        "path": "/v1/users/${userId}",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

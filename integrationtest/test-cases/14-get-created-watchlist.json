@@ -1,0 +1,11 @@
+{
+    "name": "Get created watchlist",
+    "request": {
+        "method": "GET",
+        "path": "/v1/watchlists/${watchlistId}",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "Delete missing watchlist",
+    "request": {
+        "method": "DELETE",
+        "path": "/v1/watchlists/${watchlistId}",
+        "useToken": true
+    },
+    "response": {
+        "status": 404
+    }
+}

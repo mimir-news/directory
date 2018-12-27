@@ -1,0 +1,17 @@
+{
+    "name": "Create watchlist",
+    "request": {
+        "method": "POST",
+        "path": "/v1/watchlists/portfolio",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    },
+    "setEnv": [
+        {
+            "envKey": "watchlistId",
+            "responseKey": "id"
+        }
+    ]
+}

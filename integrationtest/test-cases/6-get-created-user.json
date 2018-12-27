@@ -1,0 +1,11 @@
+{
+    "name": "Get created user",
+    "request": {
+        "method": "GET",
+        "path": "/v1/users/${userId}",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

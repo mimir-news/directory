@@ -1,0 +1,15 @@
+{
+    "name": "create-duplicate-user",
+    "request": {
+        "method": "POST",
+        "path": "/v1/users",
+        "body": {
+            "email": "my@email.com",
+            "password": "some-other-password"
+        },
+        "useToken": false
+    },
+    "response": {
+        "status": 409
+    }
+}

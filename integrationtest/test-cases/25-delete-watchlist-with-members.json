@@ -1,0 +1,11 @@
+{
+    "name": "Delete watchlist with members",
+    "request": {
+        "method": "DELETE",
+        "path": "/v1/watchlists/${watchlistId}",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

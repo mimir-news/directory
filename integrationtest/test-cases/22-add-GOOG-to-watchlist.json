@@ -1,0 +1,11 @@
+{
+    "name": "Add GOOG to watchlist",
+    "request": {
+        "method": "PUT",
+        "path": "/v1/watchlists/${watchlistId}/stock/GOOG",
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}

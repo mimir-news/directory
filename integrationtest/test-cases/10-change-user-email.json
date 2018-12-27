@@ -1,0 +1,15 @@
+{
+    "name": "change-user-email",
+    "request": {
+        "method": "PUT",
+        "path": "/v1/users/${userId}/email",
+        "body": {
+            "id": "${userId}",
+            "email": "my-new@email.com"
+        },
+        "useToken": true
+    },
+    "response": {
+        "status": 200
+    }
+}
