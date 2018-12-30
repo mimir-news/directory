@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: directory
-          image: eu.gcr.io/mimir-185212/directory:0.3
+          image: eu.gcr.io/mimir-185212/directory:1.0
           ports:
             - name: svc-port
               containerPort: 8080
@@ -34,9 +34,9 @@ spec:
                   name: db-credentials
                   key: directory.password
             - name: PASSWORD_SECRETS_FILE
-              values: "/etc/mimir/directory/password_secrets.json"
+              value: "/etc/mimir/directory/password_secrets.json"
             - name: TOKEN_SECRETS_FILE
-              values: "/etc/mimir/token_secrets.json"
+              value: "/etc/mimir/token_secrets.json"
           volumeMounts:
             - name: password-secrets
               mountPath: /etc/mimir/directory/password_secrets.json
