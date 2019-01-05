@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: directory
-          image: eu.gcr.io/mimir-185212/directory:1.0
+          image: eu.gcr.io/mimir-185212/directory:1.1
           ports:
             - name: svc-port
               containerPort: 8080

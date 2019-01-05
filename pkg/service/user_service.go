@@ -105,7 +105,7 @@ func (us *userSvc) Authenticate(credentials user.Credentials, clientID string) (
 		return emptyToken, err
 	}
 
-	return user.NewToken(encodedToken), nil
+	return user.NewToken(encodedToken, u.User), nil
 }
 
 // ChangePassword changes a users password if valid credentials are provided.

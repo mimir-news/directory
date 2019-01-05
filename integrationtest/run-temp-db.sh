@@ -21,8 +21,8 @@ echo "Starting database: $DB_CONTAINER_NAME"
 docker run -d --rm --name $DB_CONTAINER_NAME -p 5432:5432 \
    -e POSTGRES_PASSWORD=password $DB_IMAGE
 
-echo "Sleeping for 2 seconds to make database ready"
-sleep 2
+echo "Sleeping for 3 seconds to make database ready"
+sleep 3
 
 echo 'Setup up database and user'
 docker exec -i $DB_CONTAINER_NAME psql -U postgres < conf/db_setup.sql
