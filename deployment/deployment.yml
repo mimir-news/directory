@@ -5,7 +5,7 @@ metadata:
   labels:
     app: directory
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
@@ -21,7 +21,7 @@ spec:
             - name: SERVICE_PORT
               value: "8080"
             - name: DB_HOST
-              value: mimir-db
+              value: db-pooler 
             - name: DB_PORT
               value: "5432"
             - name: DB_NAME
@@ -37,6 +37,8 @@ spec:
               value: "/etc/mimir/directory/password_secrets.json"
             - name: TOKEN_SECRETS_FILE
               value: "/etc/mimir/token_secrets.json"
+            - name: GIN_MODE
+              value: release
           volumeMounts:
             - name: password-secrets
               mountPath: /etc/mimir/directory/password_secrets.json
