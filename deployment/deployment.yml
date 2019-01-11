@@ -1,74 +1,141 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: directory
   labels:
     app: directory
+  name: directory
 spec:
   replicas: 2
   template:
     metadata:
+      annotations:
+        linkerd.io/created-by: linkerd/cli stable-2.1.0
+        linkerd.io/proxy-version: stable-2.1.0
       labels:
         app: directory
+        linkerd.io/control-plane-ns: linkerd
+        linkerd.io/proxy-deployment: directory
     spec:
       containers:
-        - name: directory
-          image: eu.gcr.io/mimir-185212/directory:1.1
-          ports:
-            - name: svc-port
-              containerPort: 8080
-          env:
-            - name: SERVICE_PORT
-              value: "8080"
-            - name: DB_HOST
-              value: db-pooler 
-            - name: DB_PORT
-              value: "5432"
-            - name: DB_NAME
-              value: directory
-            - name: DB_USERNAME
-              value: directory
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: db-credentials
-                  key: directory.password
-            - name: PASSWORD_SECRETS_FILE
-              value: "/etc/mimir/directory/password_secrets.json"
-            - name: TOKEN_SECRETS_FILE
-              value: "/etc/mimir/token_secrets.json"
-            - name: GIN_MODE
-              value: release
-          volumeMounts:
-            - name: password-secrets
-              mountPath: /etc/mimir/directory/password_secrets.json
-              subPath: password_secrets.json
-            - name: token-secrets
-              mountPath: /etc/mimir/token_secrets.json
-              subPath: token_secrets.json
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: svc-port
-            initialDelaySeconds: 30
-          readinessProbe:
-            httpGet:
-              path: /health
-              port: svc-port
-            initialDelaySeconds: 25
-          imagePullPolicy: Always
-      volumes:
-        - name: password-secrets
-          secret:
-            secretName: password-secret
-            items:
-              - key: content
-                path: password_secrets.json
-        - name: token-secrets
-          secret:
-            secretName: token-secret
-            items:
-              - key: content
-                path: token_secrets.json
+      - name: directory
+        image: eu.gcr.io/mimir-185212/directory:1.1
+        ports:
+        - containerPort: 8080
+          name: svc-port
+        env:
+        - name: SERVICE_PORT
+          value: "8080"
+        - name: DB_HOST
+          value: db-pooler
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: directory
+        - name: DB_USERNAME
+          value: directory
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: directory.password
+              name: db-credentials
+        - name: PASSWORD_SECRETS_FILE
+          value: /etc/mimir/directory/password_secrets.json
+        - name: TOKEN_SECRETS_FILE
+          value: /etc/mimir/token_secrets.json
+        - name: GIN_MODE
+          value: release
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: svc-port
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: svc-port
+          initialDelaySeconds: 25
+        volumeMounts:
+        - mountPath: /etc/mimir/directory/password_secrets.json
+          name: password-secrets
+          subPath: password_secrets.json
+        - mountPath: /etc/mimir/token_secrets.json
+          name: token-secrets
+          subPath: token_secrets.json
+        imagePullPolicy: Always
+      - name: linkerd-proxy
+        image: gcr.io/linkerd-io/proxy:stable-2.1.0
+        ports:
+        - containerPort: 4143
+          name: linkerd-proxy
+        - containerPort: 4191
+          name: linkerd-metrics
+        env:
+        - name: LINKERD2_PROXY_LOG
+          value: warn,linkerd2_proxy=info
+        - name: LINKERD2_PROXY_BIND_TIMEOUT
+          value: 10s
+        - name: LINKERD2_PROXY_CONTROL_URL
+          value: tcp://linkerd-proxy-api.linkerd.svc.cluster.local:8086
+        - name: LINKERD2_PROXY_CONTROL_LISTENER
+          value: tcp://0.0.0.0:4190
+        - name: LINKERD2_PROXY_METRICS_LISTENER
+          value: tcp://0.0.0.0:4191
+        - name: LINKERD2_PROXY_OUTBOUND_LISTENER
+          value: tcp://127.0.0.1:4140
+        - name: LINKERD2_PROXY_INBOUND_LISTENER
+          value: tcp://0.0.0.0:4143
+        - name: LINKERD2_PROXY_DESTINATION_PROFILE_SUFFIXES
+          value: .
+        - name: LINKERD2_PROXY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: 4191
+          initialDelaySeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: 4191
+          initialDelaySeconds: 10
+        securityContext:
+          runAsUser: 2102
+        terminationMessagePolicy: FallbackToLogsOnError
       imagePullSecrets:
-        - name: gcr-json-key
+      - name: gcr-json-key
+      initContainers:
+      - name: linkerd-init
+        image: gcr.io/linkerd-io/proxy-init:stable-2.1.0
+        args:
+        - --incoming-proxy-port
+        - "4143"
+        - --outgoing-proxy-port
+        - "4140"
+        - --proxy-uid
+        - "2102"
+        - --inbound-ports-to-ignore
+        - 4190,4191
+        securityContext:
+          capabilities:
+            add:
+            - NET_ADMIN
+          privileged: false
+        terminationMessagePolicy: FallbackToLogsOnError
+        imagePullPolicy: IfNotPresent
+      volumes:
+      - name: password-secrets
+        secret:
+          items:
+          - key: content
+            path: password_secrets.json
+          secretName: password-secret
+      - name: token-secrets
+        secret:
+          items:
+          - key: content
+            path: token_secrets.json
+          secretName: token-secret
+

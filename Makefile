@@ -16,3 +16,6 @@ build-test:
 
 run-docker-test:
 	docker run --rm -t $(NAME)-test:$(VERSION)
+
+deploy:
+	kubectl apply -f deployment/*.yml
