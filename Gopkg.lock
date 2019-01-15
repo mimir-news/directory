@@ -66,7 +66,7 @@
   version = "v0.0.4"
 
 [[projects]]
-  digest = "1:788cb5e44bd329cde531582bd1e4bfa1fceda1f97820a9388897d595efc630da"
+  digest = "1:a72960aa0e4e2a270b955b76340ed541af90d8c55e403a29f033e6c5f3d8d2b6"
   name = "github.com/mimir-news/pkg"
   packages = [
     "dbutil",
@@ -77,7 +77,7 @@
     "schema/user",
   ]
   pruneopts = "UT"
-  revision = "88b052bdc751bc29aefa1dbfeceadc3314adab0a"
+  revision = "b6860d8894d9557d2aca675bb8fabc5895152202"
   version = "0.9"
 
 [[projects]]
@@ -114,14 +114,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:89cf776c0a621a34017c819b66b9e0f0bb076d3c5b9ca74763fb89570e140038"
+  digest = "1:adddeca6a627f69b0c34971dfc13292f334352d43ba0b9b121434ff92a2d04c1"
   name = "github.com/rubenv/sql-migrate"
   packages = [
     ".",
     "sqlparse",
   ]
   pruneopts = "UT"
-  revision = "ba2c6a7295c59448dbc195cef2f41df5163b3892"
+  revision = "5a8808c14925f69d2228981db113f672ad047e69"
 
 [[projects]]
   digest = "1:274f67cb6fed9588ea2521ecdac05a6d62a8c51c074c1fccc6a49a40ba80e925"
@@ -132,12 +132,12 @@
   version = "v1.2.0"
 
 [[projects]]
-  digest = "1:18752d0b95816a1b777505a97f71c7467a8445b8ffb55631a7bf779f6ba4fa83"
+  digest = "1:972c2427413d41a1e06ca4897e8528e5a1622894050e2f527b38ddf0f343f759"
   name = "github.com/stretchr/testify"
   packages = ["assert"]
   pruneopts = "UT"
-  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
-  version = "v1.2.2"
+  revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
+  version = "v1.3.0"
 
 [[projects]]
   digest = "1:03aa6e485e528acb119fb32901cf99582c380225fc7d5a02758e08b180cb56c3"
@@ -180,7 +180,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c97d5909750cc6d1921f52d725a60f6a75b39e4e8abddf852541e83bb36f0c8e"
+  digest = "1:aee3c1ba12e58a5b757bc271014622cf461f23351945c5364c6b4651c662c3eb"
   name = "golang.org/x/crypto"
   packages = [
     "bcrypt",
@@ -191,15 +191,15 @@
     "sha3",
   ]
   pruneopts = "UT"
-  revision = "eb0de9b17e854e9b1ccd9963efafc79862359959"
+  revision = "ff983b9c42bc9fbf91556e191cc8efb585c16908"
 
 [[projects]]
   branch = "master"
-  digest = "1:8775d8a768d9e65e8b659172804aac5db1fc8d563ba766470a6c2698c57c61a7"
+  digest = "1:fe2af5c0e6b4188bb1907e051cd086dae4f7ab3a2f4c1b62c03fefca848ab900"
   name = "golang.org/x/sys"
   packages = ["unix"]
   pruneopts = "UT"
-  revision = "4ed8d59d0b35e1e29334a206d1b3f38b1e5dfb31"
+  revision = "a457fd036447854c0c02e89ea439481bdcf941a2"
 
 [[projects]]
   digest = "1:cbc72c4c4886a918d6ab4b95e347ffe259846260f99ebdd8a198c2331cf2b2e9"

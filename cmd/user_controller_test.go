@@ -30,6 +30,7 @@ func TestUserCreation(t *testing.T) {
 
 	expectedUser := user.User{
 		Email:     credentials.Email,
+		Role:      auth.UserRole,
 		CreatedAt: time.Now().UTC(),
 	}
 
@@ -43,6 +44,7 @@ func TestUserCreation(t *testing.T) {
 	err := json.NewDecoder(res.Body).Decode(&u)
 	assert.NoError(err)
 	assert.Equal(expectedUser.Email, u.Email)
+	assert.Equal(expectedUser.Role, u.Role)
 	assert.Equal(expectedUser.Watchlists, u.Watchlists)
 	assert.True(u.CreatedAt.After(expectedUser.CreatedAt))
 	assert.Equal(credentials.Email, userRepo.SaveArg.User.Email)
@@ -73,6 +75,7 @@ func TestHandleLogin(t *testing.T) {
 		User: user.User{
 			ID:        "user-id",
 			Email:     credentials.Email,
+			Role:      auth.UserRole,
 			CreatedAt: time.Now().UTC(),
 		},
 		Credentials: domain.StoredCredentials{
@@ -102,6 +105,9 @@ func TestHandleLogin(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal(expectedUser.User.ID, authToken.User.ID)
 	assert.Equal(expectedUser.User.ID, sessionRepo.SaveArg.UserID)
+	assert.Equal(expectedUser.User.Role, token.User.Role)
+	assert.Equal(sessionRepo.SaveArg.RefreshToken, token.RefreshToken)
+	assert.Equal(sessionRepo.SaveArg.ID, authToken.ID)
 
 	wrongCredentials := user.Credentials{
 		Email:    "mail@mail.com",
@@ -123,6 +129,7 @@ func TestHandleGetUser(t *testing.T) {
 		User: user.User{
 			ID:    userID,
 			Email: "mail@mail.com",
+			Role:  auth.UserRole,
 		},
 	}
 
@@ -143,6 +150,7 @@ func TestHandleGetUser(t *testing.T) {
 	err := json.NewDecoder(res.Body).Decode(&user)
 	assert.NoError(err)
 	assert.Equal(expectedUser.User.ID, user.ID)
+	assert.Equal(expectedUser.User.Role, user.Role)
 	assert.Equal(expectedUser.User.ID, userRepo.FindArg)
 
 	// Setup: Missing token.

@@ -43,14 +43,14 @@ type pgUserRepo struct {
 }
 
 const findUserByIDQuery = `SELECT 
-	id, email, password, salt, created_at
+	id, email, role, password, salt, created_at
 	FROM app_user WHERE id = $1`
 
 // Find attempts to find a user by ID.
 func (ur *pgUserRepo) Find(userID string) (domain.FullUser, error) {
 	var u domain.FullUser
 	err := ur.db.QueryRow(findUserByIDQuery, userID).Scan(
-		&u.User.ID, &u.User.Email, &u.Credentials.Password,
+		&u.User.ID, &u.User.Email, &u.User.Role, &u.Credentials.Password,
 		&u.Credentials.Salt, &u.User.CreatedAt)
 
 	if err == sql.ErrNoRows {
@@ -62,22 +62,22 @@ func (ur *pgUserRepo) Find(userID string) (domain.FullUser, error) {
 }
 
 const findUserByEmailQuery = `SELECT 
-	id, email, password, salt, created_at
+	id, email, role, password, salt, created_at
 	FROM app_user WHERE email = $1`
 
 // FindByEmail attempts to find a user by email.
 func (ur *pgUserRepo) FindByEmail(email string) (domain.FullUser, error) {
-	var user domain.FullUser
+	var u domain.FullUser
 	err := ur.db.QueryRow(findUserByEmailQuery, email).Scan(
-		&user.User.ID, &user.User.Email, &user.Credentials.Password,
-		&user.Credentials.Salt, &user.User.CreatedAt)
+		&u.User.ID, &u.User.Email, &u.User.Role, &u.Credentials.Password,
+		&u.Credentials.Salt, &u.User.CreatedAt)
 
 	if err == sql.ErrNoRows {
 		return emptyUser, ErrNoSuchUser
 	} else if err != nil {
 		return emptyUser, err
 	}
-	return user, nil
+	return u, nil
 }
 
 const saveUserQuery = `
