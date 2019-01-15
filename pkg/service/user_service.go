@@ -3,6 +3,8 @@ package service
 import (
 	"net/http"
 
+	"github.com/mimir-news/pkg/id"
+
 	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/pkg/httputil"
@@ -21,9 +23,10 @@ type UserService interface {
 	Get(userID string) (user.User, error)
 	Create(credentials user.Credentials) (user.User, error)
 	Delete(userID string) error
-	Authenticate(credentials user.Credentials, clientID string) (user.Token, error)
+	Authenticate(credentials user.Credentials) (user.Token, error)
 	ChangePassword(change user.PasswordChange) error
 	ChangeEmail(userID, newEmail string) error
+	GetAnonymousToken() (user.Token, error)
 }
 
 // NewUserService creates a new UserService using the default implementation.
@@ -90,7 +93,7 @@ func (us *userSvc) Delete(userID string) error {
 }
 
 // Authenticate validates the credentials provided.
-func (us *userSvc) Authenticate(credentials user.Credentials, clientID string) (user.Token, error) {
+func (us *userSvc) Authenticate(credentials user.Credentials) (user.Token, error) {
 	err := us.passwordSvc.Verify(credentials)
 	if err != nil {
 		return emptyToken, httputil.ErrUnauthorized()
@@ -135,6 +138,18 @@ func (us *userSvc) ChangeEmail(userID, newEmail string) error {
 	savedUser.User.Email = newEmail
 	savedUser.Credentials.Email = newEmail
 	return us.userRepo.Save(savedUser)
+}
+
+// GetAnonymousToken creates a new anonymous token.
+func (us *userSvc) GetAnonymousToken() (user.Token, error) {
+	watchlists := []user.Watchlist{getDefaultWatchlist()}
+	u := user.New("", auth.AnonymousRole, watchlists)
+	accessToken, err := us.tokenSigner.Sign(id.New(), auth.User{ID: u.ID, Role: u.Role})
+	if err != nil {
+		return emptyToken, err
+	}
+
+	return user.NewToken(accessToken, "", u), nil
 }
 
 func (us *userSvc) createNewUser(credentials user.Credentials) (user.User, error) {

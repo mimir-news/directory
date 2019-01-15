@@ -342,3 +342,32 @@ func TestHandleEmailChange(t *testing.T) {
 	assert.Equal("", userRepo.FindArg)
 
 }
+
+func TestGetAnonymousToken(t *testing.T) {
+	assert := assert.New(t)
+
+	cfg := getTestConfig()
+	verifier := auth.NewVerifier(cfg.JWTCredentials, 0)
+	mockEnv := getTestEnv(cfg, nil, nil, nil)
+
+	// Setup: Get anonymous token happy path.
+	server := newServer(mockEnv, cfg)
+	req := createTestGetRequest("", "", "/v1/login/anonymous")
+	res := performTestRequest(server.Handler, req)
+	// Test
+	assert.Equal(http.StatusOK, res.Code)
+	var token user.Token
+	err := json.NewDecoder(res.Body).Decode(&token)
+	assert.NoError(err)
+	assert.Equal(auth.AnonymousRole, token.User.Role)
+	assert.Equal("", token.RefreshToken)
+	expectedSymbols := []string{"TSLA", "AAPL", "AMZN", "NFLX", "FB"}
+	for i, stock := range token.User.Watchlists[0].Stocks {
+		es := expectedSymbols[i]
+		assert.Equal(es, stock.Symbol)
+	}
+
+	content, err := verifier.Verify(token.Token)
+	assert.NoError(err)
+	assert.Equal(auth.AnonymousRole, content.User.Role)
+}

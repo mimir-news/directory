@@ -3,6 +3,9 @@ package service_test
 import (
 	"net/http"
 	"testing"
+	"time"
+
+	"github.com/mimir-news/pkg/httputil/auth"
 
 	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/directory/pkg/repository"
@@ -213,4 +216,29 @@ func TestChangeEmail(t *testing.T) {
 	savedUser = userRepo.saveArg
 	assert.Equal("", savedUser.User.ID)
 
+}
+
+func TestCreateAnonymousUser(t *testing.T) {
+	assert := assert.New(t)
+
+	jwtCreds := auth.JWTCredentials{Issuer: "user_service_test", Secret: id.New()}
+	signer := auth.NewSigner(jwtCreds, 24*time.Hour)
+	verifier := auth.NewVerifier(jwtCreds, 0)
+	userSvc := service.NewUserService(nil, signer, nil, nil)
+
+	token, err := userSvc.GetAnonymousToken()
+	assert.NoError(err)
+	assert.Equal(auth.AnonymousRole, token.User.Role)
+	assert.Equal("", token.RefreshToken)
+	assert.Equal(1, len(token.User.Watchlists))
+	assert.Equal(5, len(token.User.Watchlists[0].Stocks))
+	expectedSymbols := []string{"TSLA", "AAPL", "AMZN", "NFLX", "FB"}
+	for i, stock := range token.User.Watchlists[0].Stocks {
+		es := expectedSymbols[i]
+		assert.Equal(es, stock.Symbol)
+	}
+
+	content, err := verifier.Verify(token.Token)
+	assert.NoError(err)
+	assert.Equal(token.User.ID, content.User.ID)
 }

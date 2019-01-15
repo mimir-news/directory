@@ -20,6 +20,7 @@ var unsecuredRoutes = []string{
 	"/health",
 	"/v1/users",
 	"/v1/login",
+	"/v1/login/anonymous",
 }
 
 type config struct {

@@ -35,8 +35,7 @@ func (e *env) handleLogin(c *gin.Context) {
 		return
 	}
 
-	clientID := c.GetHeader(auth.ClientIDKey)
-	token, err := e.userSvc.Authenticate(credentials, clientID)
+	token, err := e.userSvc.Authenticate(credentials)
 	if err != nil {
 		c.Error(err)
 		return
@@ -120,6 +119,16 @@ func (e *env) handleChangeEmail(c *gin.Context) {
 	}
 
 	httputil.SendOK(c)
+}
+
+func (e *env) getAnonymousToken(c *gin.Context) {
+	token, err := e.userSvc.GetAnonymousToken()
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, token)
 }
 
 func getUserIDFromPath(c *gin.Context) (string, error) {

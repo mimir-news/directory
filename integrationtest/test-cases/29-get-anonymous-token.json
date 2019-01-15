@@ -1,0 +1,14 @@
+{
+    "name": "Get anonymous user token",
+    "request": {
+        "method": "GET",
+        "path": "/v1/login/anonymous",
+        "useToken": false
+    },
+    "response": {
+        "status": 200,
+        "body": {
+            "refreshToken": ""
+        }
+    }
+}

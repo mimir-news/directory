@@ -2,6 +2,10 @@ package service
 
 import (
 	"net/http"
+	"time"
+
+	"github.com/mimir-news/pkg/id"
+	"github.com/mimir-news/pkg/schema/stock"
 
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/pkg/httputil"
@@ -108,4 +112,19 @@ func (ws *watchlistSvc) saveList(userID string, watchlist user.Watchlist) error 
 	}
 
 	return err
+}
+
+func getDefaultWatchlist() user.Watchlist {
+	return user.Watchlist{
+		ID:   id.New(),
+		Name: "Watchlist",
+		Stocks: []stock.Stock{
+			stock.Stock{Name: "Tesla, Inc.", Symbol: "TSLA"},
+			stock.Stock{Name: "Apple Inc.", Symbol: "AAPL"},
+			stock.Stock{Name: "Amazon.com, Inc.", Symbol: "AMZN"},
+			stock.Stock{Name: "Netflix, Inc.", Symbol: "NFLX"},
+			stock.Stock{Name: "Facebook Inc.", Symbol: "FB"},
+		},
+		CreatedAt: time.Now().UTC(),
+	}
 }
