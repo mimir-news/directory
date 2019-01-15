@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	emptyUser  = user.User{}
-	emptyToken = user.Token{}
+	emptyUser    = user.User{}
+	emptyToken   = user.Token{}
+	emptySession = domain.Session{}
 )
 
 // UserService service responsible for handling users.
@@ -100,12 +101,12 @@ func (us *userSvc) Authenticate(credentials user.Credentials, clientID string) (
 		return emptyToken, err
 	}
 
-	encodedToken, err := us.createSessionToken(u.User.ID, clientID)
+	token, err := us.createSessionToken(u.User)
 	if err != nil {
 		return emptyToken, err
 	}
 
-	return user.NewToken(encodedToken, u.User), nil
+	return token, nil
 }
 
 // ChangePassword changes a users password if valid credentials are provided.
@@ -163,19 +164,19 @@ func (us *userSvc) ensureUserDoesNotExist(email string) error {
 	return err
 }
 
-func (us *userSvc) createSessionToken(userID, clientID string) (string, error) {
-	session := domain.NewSession(userID)
-	token, err := us.tokenSigner.New(session.ID, userID, clientID)
+func (us *userSvc) createSessionToken(u user.User) (user.Token, error) {
+	session := domain.NewSession(u.ID)
+	accessToken, err := us.tokenSigner.Sign(session.ID, auth.User{ID: u.ID, Role: u.Role})
 	if err != nil {
-		return "", err
+		return emptyToken, err
 	}
 
 	err = us.sessionRepo.Save(session)
 	if err != nil {
-		return "", err
+		return emptyToken, err
 	}
 
-	return token, nil
+	return user.NewToken(accessToken, session.RefreshToken, u), nil
 }
 
 func (us *userSvc) updateUserCredentials(newCreds domain.StoredCredentials) error {

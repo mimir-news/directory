@@ -82,16 +82,16 @@ func (ur *pgUserRepo) FindByEmail(email string) (domain.FullUser, error) {
 
 const saveUserQuery = `
 	INSERT INTO 
-	app_user(id, email, password, salt, created_at)
-	VALUES ($1, $2, $3, $4, $5)
+	app_user(id, email, role, password, salt, created_at)
+	VALUES ($1, $2, $3, $4, $5, $6)
 	ON CONFLICT ON CONSTRAINT app_user_pkey 
-	DO UPDATE SET email = $2, password = $3, salt = $4`
+	DO UPDATE SET email = $2, password = $4, salt = $5`
 
 // Save upserts a user in the database.
 func (ur *pgUserRepo) Save(user domain.FullUser) error {
 	u := user.User
 	c := user.Credentials
-	res, err := ur.db.Exec(saveUserQuery, u.ID, u.Email, c.Password, c.Salt, u.CreatedAt)
+	res, err := ur.db.Exec(saveUserQuery, u.ID, u.Email, u.Role, c.Password, c.Salt, u.CreatedAt)
 	if err != nil {
 		return err
 	}

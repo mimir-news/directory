@@ -4,10 +4,9 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/mimir-news/pkg/dbutil"
-
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"github.com/mimir-news/pkg/dbutil"
 	"github.com/mimir-news/pkg/httputil"
 	"github.com/mimir-news/pkg/httputil/auth"
 )
@@ -31,6 +30,8 @@ func newServer(e *env, conf config) *http.Server {
 	// Unsecured enpoints
 	r.POST("/v1/users", e.handleUserCreation)
 	r.POST("/v1/login", e.handleLogin)
+	r.PUT("/v1/login", placeholderHandler)
+	r.GET("/v1/login/anonymous", placeholderHandler)
 
 	// Secured user routes
 	r.GET("/v1/users/:userId", e.handleGetUser)
@@ -52,9 +53,8 @@ func newServer(e *env, conf config) *http.Server {
 	}
 }
 
-func newRouter(e *env, conf config) *gin.Engine {
-	authOpts := auth.NewOptions(
-		conf.TokenSecret, conf.TokenVerificationKey, conf.UnsecuredRoutes...)
+func newRouter(e *env, cfg config) *gin.Engine {
+	authOpts := auth.NewOptions(cfg.JWTCredentials, cfg.UnsecuredRoutes...)
 	r := httputil.NewRouter(ServiceName, ServiceVersion, e.healthCheck)
 	r.Use(auth.RequireToken(authOpts))
 

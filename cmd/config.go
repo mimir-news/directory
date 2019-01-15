@@ -7,12 +7,13 @@ import (
 	"os"
 
 	"github.com/mimir-news/pkg/dbutil"
+	"github.com/mimir-news/pkg/httputil/auth"
 )
 
 // Service metadata.
 const (
 	ServiceName    = "directory"
-	ServiceVersion = "1.0"
+	ServiceVersion = "1.2"
 )
 
 var unsecuredRoutes = []string{
@@ -26,22 +27,20 @@ type config struct {
 	Port                  string
 	PasswordPepper        string
 	PasswordEncryptionKey string
-	TokenSecret           string
-	TokenVerificationKey  string
+	JWTCredentials        auth.JWTCredentials
 	UnsecuredRoutes       []string
 }
 
 func getConfig() config {
 	passwordSecret := getSecret(mustGetenv("PASSWORD_SECRETS_FILE"))
-	tokenSecret := getSecret(mustGetenv("TOKEN_SECRETS_FILE"))
+	jwtCredentials := getJWTCredentials(mustGetenv("JWT_CREDENTIALS_FILE"))
 
 	return config{
 		DB:                    dbutil.MustGetConfig("DB"),
 		Port:                  mustGetenv("SERVICE_PORT"),
 		PasswordPepper:        passwordSecret.Secret,
 		PasswordEncryptionKey: passwordSecret.Key,
-		TokenSecret:           tokenSecret.Secret,
-		TokenVerificationKey:  tokenSecret.Key,
+		JWTCredentials:        jwtCredentials,
 		UnsecuredRoutes:       unsecuredRoutes,
 	}
 }
@@ -64,6 +63,20 @@ func getSecret(filename string) secret {
 	}
 
 	return s
+}
+
+func getJWTCredentials(filename string) auth.JWTCredentials {
+	f, err := os.Open(filename)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	credentials, err := auth.ReadJWTCredentials(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return credentials
 }
 
 func mustGetenv(key string) string {

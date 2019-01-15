@@ -97,10 +97,10 @@ func TestHandleLogin(t *testing.T) {
 	var token user.Token
 	err := json.NewDecoder(res.Body).Decode(&token)
 	assert.NoError(err)
-	verifier := auth.NewVerifier(conf.TokenSecret, conf.TokenVerificationKey)
-	authToken, err := verifier.Verify("client-id", token.Token)
+	verifier := auth.NewVerifier(conf.JWTCredentials, 0)
+	authToken, err := verifier.Verify(token.Token)
 	assert.NoError(err)
-	assert.Equal(expectedUser.User.ID, authToken.Body.Subject)
+	assert.Equal(expectedUser.User.ID, authToken.User.ID)
 	assert.Equal(expectedUser.User.ID, sessionRepo.SaveArg.UserID)
 
 	wrongCredentials := user.Credentials{
@@ -183,7 +183,7 @@ func TestHandleDeleteUser(t *testing.T) {
 	userRepo := &repository.MockUserRepo{}
 	mockEnv := getTestEnv(conf, userRepo, nil, nil)
 	signer := getTestSigner(conf)
-	authToken, err := signer.New(id.New(), userID, clientID)
+	authToken, err := signer.Sign(id.New(), auth.User{ID: userID, Role: auth.UserRole})
 	assert.NoError(err)
 
 	// Setup: Get user happy path.
