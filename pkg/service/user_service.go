@@ -129,7 +129,7 @@ func (us *userSvc) RefreshToken(old user.Token) (user.Token, error) {
 		return emptyToken, httputil.ErrForbidden()
 	}
 
-	storedUser, err := us.userRepo.Find(tokenBody.User.ID)
+	storedUser, err := us.getRefreshUser(tokenBody.User.ID)
 	if err != nil {
 		return emptyToken, err
 	}
@@ -241,6 +241,19 @@ func (us *userSvc) updateUserCredentials(newCreds domain.StoredCredentials) erro
 	}
 
 	return us.userRepo.Save(newUser)
+}
+
+func (us *userSvc) getRefreshUser(userID string) (domain.FullUser, error) {
+	storedUser, err := us.userRepo.Find(userID)
+	if err != nil {
+		return domain.FullUser{}, err
+	}
+
+	if storedUser.User.Email == "" {
+		return domain.FullUser{}, httputil.ErrForbidden()
+	}
+
+	return storedUser, nil
 }
 
 func verifyRefreshToken(refreshToken string, token auth.Token, session domain.Session) error {

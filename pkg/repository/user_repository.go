@@ -48,17 +48,17 @@ const findUserByIDQuery = `SELECT
 
 // Find attempts to find a user by ID.
 func (ur *pgUserRepo) Find(userID string) (domain.FullUser, error) {
-	var u domain.FullUser
+	var u nullUser
 	err := ur.db.QueryRow(findUserByIDQuery, userID).Scan(
-		&u.User.ID, &u.User.Email, &u.User.Role, &u.Credentials.Password,
-		&u.Credentials.Salt, &u.User.CreatedAt)
+		&u.id, &u.email, &u.role, &u.password, &u.salt, &u.createdAt)
 
 	if err == sql.ErrNoRows {
 		return emptyUser, ErrNoSuchUser
 	} else if err != nil {
 		return emptyUser, err
 	}
-	return u, nil
+
+	return u.user(), nil
 }
 
 const findUserByEmailQuery = `SELECT 
@@ -67,17 +67,16 @@ const findUserByEmailQuery = `SELECT
 
 // FindByEmail attempts to find a user by email.
 func (ur *pgUserRepo) FindByEmail(email string) (domain.FullUser, error) {
-	var u domain.FullUser
+	var u nullUser
 	err := ur.db.QueryRow(findUserByEmailQuery, email).Scan(
-		&u.User.ID, &u.User.Email, &u.User.Role, &u.Credentials.Password,
-		&u.Credentials.Salt, &u.User.CreatedAt)
+		&u.id, &u.email, &u.role, &u.password, &u.salt, &u.createdAt)
 
 	if err == sql.ErrNoRows {
 		return emptyUser, ErrNoSuchUser
 	} else if err != nil {
 		return emptyUser, err
 	}
-	return u, nil
+	return u.user(), nil
 }
 
 const saveUserQuery = `
@@ -220,6 +219,32 @@ func extractWatchlistMembers(rows *sql.Rows) ([]watchlistMember, error) {
 	}
 
 	return members, nil
+}
+
+type nullUser struct {
+	id        string
+	email     sql.NullString
+	role      sql.NullString
+	password  sql.NullString
+	salt      sql.NullString
+	createdAt time.Time
+}
+
+func (u nullUser) user() domain.FullUser {
+	email := u.email.String
+	return domain.FullUser{
+		User: user.User{
+			ID:        u.id,
+			Email:     email,
+			Role:      u.role.String,
+			CreatedAt: u.createdAt,
+		},
+		Credentials: domain.StoredCredentials{
+			Email:    email,
+			Password: u.password.String,
+			Salt:     u.salt.String,
+		},
+	}
 }
 
 // MockUserRepo mock implementation of UserRepo.

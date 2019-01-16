@@ -1,0 +1,25 @@
+{
+    "name": "Create refresh test user",
+    "request": {
+        "method": "POST",
+        "path": "/v1/users",
+        "body": {
+            "email": "refresh.user@gmail.com",
+            "password": "some-password"
+        },
+        "useToken": false
+    },
+    "response": {
+        "status": 200,
+        "body": {
+            "email": "refresh.user@gmail.com",
+            "role": "USER"
+        }
+    },
+    "setEnv": [
+        {
+            "envKey": "userId",
+            "responseKey": "id"
+        }
+    ]
+}

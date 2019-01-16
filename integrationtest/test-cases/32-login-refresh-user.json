@@ -1,11 +1,11 @@
 {
-    "name": "Login created user",
+    "name": "Login refresh test user",
     "request": {
         "method": "POST",
         "path": "/v1/login",
         "body": {
-            "email": "my@email.com",
-            "password": "my-secret-password"
+            "email": "refresh.user@gmail.com",
+            "password": "some-password"
         },
         "useToken": false
     },

@@ -40,7 +40,7 @@ spec:
               name: db-credentials
         - name: PASSWORD_SECRETS_FILE
           value: /etc/mimir/directory/password_secrets.json
-        - name: TOKEN_SECRETS_FILE
+        - name: JWT_CREDENTIALS_FILE
           value: /etc/mimir/token_secrets.json
         - name: GIN_MODE
           value: release

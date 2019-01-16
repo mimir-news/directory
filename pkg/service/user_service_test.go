@@ -264,8 +264,9 @@ func TestRefreshToken(t *testing.T) {
 
 	expectedUser := domain.FullUser{
 		User: user.User{
-			ID:   userID,
-			Role: authUser.Role,
+			ID:    userID,
+			Email: "some@email.com",
+			Role:  authUser.Role,
 		},
 	}
 
