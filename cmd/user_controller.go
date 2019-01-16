@@ -44,6 +44,22 @@ func (e *env) handleLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, token)
 }
 
+func (e *env) handleTokenRenewal(c *gin.Context) {
+	oldToken, err := getRefreshToken(c)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	newToken, err := e.userSvc.RefreshToken(oldToken)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, newToken)
+}
+
 func (e *env) handleGetUser(c *gin.Context) {
 	userID, err := getUserIDFromPath(c)
 	if err != nil {
@@ -179,6 +195,19 @@ func getPasswordChange(c *gin.Context) (user.PasswordChange, error) {
 		return change, httputil.ErrBadRequest()
 	}
 	return change, nil
+}
+
+func getRefreshToken(c *gin.Context) (user.Token, error) {
+	var token user.Token
+	err := c.ShouldBindJSON(&token)
+	if err != nil {
+		return token, httputil.ErrBadRequest()
+	}
+	if token.Token == "" || token.RefreshToken == "" {
+		return token, httputil.ErrBadRequest()
+	}
+
+	return token, nil
 }
 
 func errUserAlreadyExists() error {

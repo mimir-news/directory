@@ -77,7 +77,8 @@ func getTestEnv(cfg config, userRepo repository.UserRepo,
 
 	passwordSvc := service.NewPasswordService(userRepo, cfg.PasswordPepper, cfg.PasswordEncryptionKey)
 	tokenSigner := getTestSigner(cfg)
-	userSvc := service.NewUserService(passwordSvc, tokenSigner, userRepo, sessionRepo)
+	verifier := auth.NewVerifier(cfg.JWTCredentials, 365*24*time.Hour)
+	userSvc := service.NewUserService(passwordSvc, tokenSigner, verifier, userRepo, sessionRepo)
 	listSvc := service.NewWatchlistService(listRepo)
 	return &env{
 		passwordSvc:  passwordSvc,

@@ -379,3 +379,70 @@ func TestGetAnonymousToken(t *testing.T) {
 	assert.NoError(err)
 	assert.Equal(auth.AnonymousRole, content.User.Role)
 }
+
+func TestHandleTokenRenewal(t *testing.T) {
+	assert := assert.New(t)
+
+	userID := id.New()
+	tokenID := id.New()
+
+	oldSession := domain.Session{
+		ID:           tokenID,
+		UserID:       userID,
+		Active:       true,
+		RefreshToken: id.New(),
+		CreatedAt:    time.Now().UTC().Add(-48 * time.Hour),
+	}
+
+	authUser := auth.User{
+		ID:   userID,
+		Role: auth.UserRole,
+	}
+
+	expectedUser := domain.FullUser{
+		User: user.User{
+			ID:   userID,
+			Role: authUser.Role,
+		},
+	}
+
+	userRepo := &repository.MockUserRepo{
+		FindUser: expectedUser,
+	}
+	sessionRepo := &repository.MockSessionRepo{
+		FindSession: oldSession,
+	}
+
+	cfg := getTestConfig()
+	verifier := auth.NewVerifier(cfg.JWTCredentials, 0)
+	signer := auth.NewSigner(cfg.JWTCredentials, 24*time.Hour)
+
+	jwt, err := signer.Sign(tokenID, authUser)
+	assert.NoError(err)
+	oldToken := user.Token{
+		Token:        jwt,
+		RefreshToken: oldSession.RefreshToken,
+	}
+	mockEnv := getTestEnv(cfg, userRepo, sessionRepo, nil)
+
+	// Setup: Renew token happy path.
+	server := newServer(mockEnv, cfg)
+
+	req := createTestPutRequest("", "", "/v1/login", oldToken)
+	res := performTestRequest(server.Handler, req)
+	assert.Equal(http.StatusOK, res.Code)
+	var newToken user.Token
+	err = json.NewDecoder(res.Body).Decode(&newToken)
+	assert.NoError(err)
+	assert.NotEqual(oldToken.RefreshToken, newToken.RefreshToken)
+	assert.Equal(userID, newToken.User.ID)
+	newTokenContent, err := verifier.Verify(newToken.Token)
+	assert.NoError(err)
+	assert.Equal(userID, newTokenContent.User.ID)
+	assert.NotEqual(tokenID, newTokenContent.ID)
+
+	// Bad request part
+	req = createTestPutRequest("", "", "/v1/login", user.User{})
+	res = performTestRequest(server.Handler, req)
+	assert.Equal(http.StatusBadRequest, res.Code)
+}

@@ -31,8 +31,9 @@ func setupEnv(conf config) *env {
 
 	passwordSvc := service.NewPasswordService(userRepo, conf.PasswordPepper, conf.PasswordEncryptionKey)
 	signer := auth.NewSigner(conf.JWTCredentials, 24*time.Hour)
+	verifier := auth.NewVerifier(conf.JWTCredentials, 365*24*time.Hour)
 
-	userService := service.NewUserService(passwordSvc, signer, userRepo, sessionRepo)
+	userService := service.NewUserService(passwordSvc, signer, verifier, userRepo, sessionRepo)
 	watchlistSvc := service.NewWatchlistService(watchlsitRepo)
 
 	return &env{

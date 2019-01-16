@@ -2,15 +2,17 @@ package service
 
 import (
 	"net/http"
-
-	"github.com/mimir-news/pkg/id"
+	"time"
 
 	"github.com/mimir-news/directory/pkg/domain"
 	"github.com/mimir-news/directory/pkg/repository"
 	"github.com/mimir-news/pkg/httputil"
 	"github.com/mimir-news/pkg/httputil/auth"
+	"github.com/mimir-news/pkg/id"
 	"github.com/mimir-news/pkg/schema/user"
 )
+
+const year = 365 * 24 * time.Hour
 
 var (
 	emptyUser    = user.User{}
@@ -24,6 +26,7 @@ type UserService interface {
 	Create(credentials user.Credentials) (user.User, error)
 	Delete(userID string) error
 	Authenticate(credentials user.Credentials) (user.Token, error)
+	RefreshToken(old user.Token) (user.Token, error)
 	ChangePassword(change user.PasswordChange) error
 	ChangeEmail(userID, newEmail string) error
 	GetAnonymousToken() (user.Token, error)
@@ -31,11 +34,12 @@ type UserService interface {
 
 // NewUserService creates a new UserService using the default implementation.
 func NewUserService(
-	pwdSvc *PasswordService, signer auth.Signer,
+	pwdSvc *PasswordService, signer auth.Signer, verifier auth.Verifier,
 	userRepo repository.UserRepo, sessionRepo repository.SessionRepo) UserService {
 	return &userSvc{
 		passwordSvc: pwdSvc,
 		tokenSigner: signer,
+		verifier:    verifier,
 		userRepo:    userRepo,
 		sessionRepo: sessionRepo,
 	}
@@ -44,6 +48,7 @@ func NewUserService(
 type userSvc struct {
 	passwordSvc *PasswordService
 	tokenSigner auth.Signer
+	verifier    auth.Verifier
 	userRepo    repository.UserRepo
 	sessionRepo repository.SessionRepo
 }
@@ -110,6 +115,36 @@ func (us *userSvc) Authenticate(credentials user.Credentials) (user.Token, error
 	}
 
 	return token, nil
+}
+
+// RefreshToken refreshes an old token if old is valid.
+func (us *userSvc) RefreshToken(old user.Token) (user.Token, error) {
+	tokenBody, err := us.verifier.Verify(old.Token)
+	if err != nil {
+		return emptyToken, httputil.ErrUnauthorized()
+	}
+
+	oldSession, err := us.sessionRepo.Find(tokenBody.ID)
+	if err != nil {
+		return emptyToken, httputil.ErrForbidden()
+	}
+
+	storedUser, err := us.userRepo.Find(tokenBody.User.ID)
+	if err != nil {
+		return emptyToken, err
+	}
+
+	err = verifyRefreshToken(old.RefreshToken, tokenBody, oldSession)
+	if err != nil {
+		return emptyToken, httputil.ErrForbidden()
+	}
+
+	err = us.sessionRepo.Delete(tokenBody.ID)
+	if err != nil {
+		return emptyToken, err
+	}
+
+	return us.createSessionToken(storedUser.User)
 }
 
 // ChangePassword changes a users password if valid credentials are provided.
@@ -208,10 +243,38 @@ func (us *userSvc) updateUserCredentials(newCreds domain.StoredCredentials) erro
 	return us.userRepo.Save(newUser)
 }
 
+func verifyRefreshToken(refreshToken string, token auth.Token, session domain.Session) error {
+	if token.User.Role != auth.UserRole {
+		return httputil.ErrForbidden()
+	}
+
+	if token.User.ID != session.UserID {
+		return httputil.ErrForbidden()
+	}
+
+	if !session.Active {
+		return httputil.ErrForbidden()
+	}
+
+	if session.CreatedAt.Before(now().Add(-1 * year)) {
+		return httputil.ErrForbidden()
+	}
+
+	if session.RefreshToken != refreshToken {
+		return httputil.ErrForbidden()
+	}
+
+	return nil
+}
+
 func errUserAlreadyExists() error {
 	return httputil.NewError("User already exists", http.StatusConflict)
 }
 
 func errPasswordMissmatch() error {
 	return httputil.NewError("Passwords do not match", http.StatusBadRequest)
+}
+
+func now() time.Time {
+	return time.Now().UTC()
 }
