@@ -5,7 +5,7 @@ metadata:
     app: directory
   name: directory
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       annotations:
@@ -62,13 +62,6 @@ spec:
           name: token-secrets
           subPath: token_secrets.json
         imagePullPolicy: Always
-        resources:
-          requests:
-            memory: 100Mi
-            cpu: "90m"
-          limits:
-            memory: 100Mi
-            cpu: "90m"
       - name: linkerd-proxy
         image: gcr.io/linkerd-io/proxy:stable-2.1.0
         ports:
