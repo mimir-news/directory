@@ -61,9 +61,6 @@ func createTestRequest(clientID, token, route, method string, body interface{}) 
 		log.Fatal(err)
 	}
 
-	if clientID != "" {
-		req.Header.Set(auth.ClientIDKey, clientID)
-	}
 	if token != "" {
 		bearerToken := auth.AuthTokenPrefix + token
 		req.Header.Set(auth.AuthHeaderKey, bearerToken)

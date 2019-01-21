@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"testing"
 	"time"
@@ -446,4 +447,64 @@ func TestHandleTokenRenewal(t *testing.T) {
 	req = createTestPutRequest("", "", "/v1/login", user.User{})
 	res = performTestRequest(server.Handler, req)
 	assert.Equal(http.StatusBadRequest, res.Code)
+}
+
+func TestDisallowAnonymousToken(t *testing.T) {
+	assert := assert.New(t)
+
+	cfg := getTestConfig()
+	signer := auth.NewSigner(cfg.JWTCredentials, 1*time.Hour)
+	token, err := signer.Sign(id.New(), auth.User{ID: id.New(), Role: auth.AnonymousRole})
+	assert.NoError(err)
+	mockEnv := getTestEnv(cfg, nil, nil, nil)
+
+	// Setup: Get anonymous token happy path.
+	server := newServer(mockEnv, cfg)
+
+	getRoutes := []string{
+		"/v1/users/some-user-id",
+		"/v1/watchlists/some-list-id",
+	}
+	for i, route := range getRoutes {
+		name := fmt.Sprintf("%d - TestDisallowAnonymousToken GET %s", i+1, route)
+		req := createTestGetRequest("", token, route)
+		res := performTestRequest(server.Handler, req)
+		assert.Equal(http.StatusForbidden, res.Code, name)
+	}
+
+	putRoutes := []string{
+		"/v1/users/some-user-id/password",
+		"/v1/users/some-user-id/email",
+		"/v1/watchlists/some-list-id/name/list-name",
+		"/v1/watchlists/some-list-id/stock/symbol-name",
+	}
+	for i, route := range putRoutes {
+		name := fmt.Sprintf("%d - TestDisallowAnonymousToken PUT %s", i+1, route)
+		req := createTestPutRequest("", token, route, nil)
+		res := performTestRequest(server.Handler, req)
+		assert.Equal(http.StatusForbidden, res.Code, name)
+	}
+
+	deleteRoutes := []string{
+		"/v1/users/some-user-id",
+		"/v1/watchlists/some-list-id",
+		"/v1/watchlists/some-list-id/stock/symbol-name",
+	}
+	for i, route := range deleteRoutes {
+		name := fmt.Sprintf("%d - TestDisallowAnonymousToken DELETE %s", i+1, route)
+		req := createTestDeleteRequest("", token, route)
+		res := performTestRequest(server.Handler, req)
+		assert.Equal(http.StatusForbidden, res.Code, name)
+	}
+
+	postRoutes := []string{
+		"/v1/watchlists/some-list-name",
+	}
+	for i, route := range postRoutes {
+		name := fmt.Sprintf("%d - TestDisallowAnonymousToken POST %s", i+1, route)
+		req := createTestPostRequest("", token, route, nil)
+		res := performTestRequest(server.Handler, req)
+		assert.Equal(http.StatusForbidden, res.Code, name)
+	}
+
 }

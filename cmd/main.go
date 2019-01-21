@@ -27,6 +27,8 @@ func main() {
 func newServer(e *env, conf config) *http.Server {
 	r := newRouter(e, conf)
 
+	disallowAnonymous := auth.DisallowRoles(auth.AnonymousRole)
+
 	// Unsecured enpoints
 	r.POST("/v1/users", e.handleUserCreation)
 	r.POST("/v1/login", e.handleLogin)
@@ -34,18 +36,20 @@ func newServer(e *env, conf config) *http.Server {
 	r.GET("/v1/login/anonymous", e.getAnonymousToken)
 
 	// Secured user routes
-	r.GET("/v1/users/:userId", e.handleGetUser)
-	r.PUT("/v1/users/:userId/password", e.handleChangePassword)
-	r.PUT("/v1/users/:userId/email", e.handleChangeEmail)
-	r.DELETE("/v1/users/:userId", e.handleDeleteUser)
+	userGroup := r.Group("/v1/users", disallowAnonymous)
+	userGroup.GET("/:userId", e.handleGetUser)
+	userGroup.PUT("/:userId/password", e.handleChangePassword)
+	userGroup.PUT("/:userId/email", e.handleChangeEmail)
+	userGroup.DELETE("/:userId", e.handleDeleteUser)
 
 	// Secured watchlist routes
-	r.POST("/v1/watchlists/:name", e.handleCreateWatchlist)
-	r.DELETE("/v1/watchlists/:watchlistId", e.handleDeleteWatchlist)
-	r.GET("/v1/watchlists/:watchlistId", e.handleGetWatchlist)
-	r.PUT("/v1/watchlists/:watchlistId/name/:name", e.handleRenameWatchlist)
-	r.PUT("/v1/watchlists/:watchlistId/stock/:symbol", e.handleAddStockToWatchlist)
-	r.DELETE("/v1/watchlists/:watchlistId/stock/:symbol", e.handleDeleteStockFromWatchlist)
+	watchlistGroup := r.Group("/v1/watchlists", disallowAnonymous)
+	watchlistGroup.POST("/:name", e.handleCreateWatchlist)
+	watchlistGroup.DELETE("/:watchlistId", e.handleDeleteWatchlist)
+	watchlistGroup.GET("/:watchlistId", e.handleGetWatchlist)
+	watchlistGroup.PUT("/:watchlistId/name/:name", e.handleRenameWatchlist)
+	watchlistGroup.PUT("/:watchlistId/stock/:symbol", e.handleAddStockToWatchlist)
+	watchlistGroup.DELETE("/:watchlistId/stock/:symbol", e.handleDeleteStockFromWatchlist)
 
 	return &http.Server{
 		Addr:    ":" + conf.Port,
